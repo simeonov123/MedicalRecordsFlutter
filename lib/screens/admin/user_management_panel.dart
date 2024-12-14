@@ -18,8 +18,10 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
   @override
   void initState() {
     super.initState();
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    userProvider.fetchUsers();
+    Future.microtask(() {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      userProvider.fetchUsers();
+    });
   }
 
   @override

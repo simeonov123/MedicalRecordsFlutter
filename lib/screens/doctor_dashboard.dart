@@ -17,8 +17,10 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
   @override
   void initState() {
     super.initState();
-    final doctorProvider = Provider.of<DoctorProvider>(context, listen: false);
-    doctorProvider.fetchDoctors();
+    Future.microtask(() {
+      final doctorProvider = Provider.of<DoctorProvider>(context, listen: false);
+      doctorProvider.fetchDoctors();
+    });
   }
 
   @override
@@ -59,7 +61,6 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
           },
         ),
       ),
-      // TODO: Add more widgets and functionality as needed
     );
   }
 }

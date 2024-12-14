@@ -24,11 +24,9 @@ class DoctorProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
-
-// Add more methods as needed
 }

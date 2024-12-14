@@ -15,7 +15,7 @@ class UserProvider with ChangeNotifier {
   String? get error => _error;
 
   // Fetch all users
-  Future<void> fetchUsers() async { // Removed accessToken parameter
+  Future<void> fetchUsers() async {
     _isLoading = true;
     notifyListeners();
 
@@ -24,14 +24,14 @@ class UserProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   // Update user role
-  Future<bool> updateUserRole(int userId, String role) async { // Adjusted parameters
+  Future<bool> updateUserRole(int userId, String role) async {
     bool success = await _userService.updateUserRole(userId, role);
     if (success) {
       // Update local state
