@@ -1,5 +1,3 @@
-// lib/screens/auth/signup_screen.dart
-
 import 'package:flutter/material.dart';
 import '../../service/api_authentication_service.dart';
 import '../../widgets/custom_text_field.dart';
@@ -15,10 +13,14 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final ApiAuthenticationService _authService = ApiAuthenticationService();
+
+  // Controllers for password fields
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
   String _username = '';
   String _email = '';
-  String _password = '';
-  String _confirmPassword = '';
+  String _desiredRole = 'patient'; // Default to 'patient'
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -45,9 +47,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       }
                       return null;
                     },
-                    onSaved: (value) {
-                      _username = value!;
-                    },
+                    onSaved: (value) => _username = value!,
                   ),
                   CustomTextField(
                     label: 'Email',
@@ -60,13 +60,12 @@ class _SignupScreenState extends State<SignupScreen> {
                       }
                       return null;
                     },
-                    onSaved: (value) {
-                      _email = value!;
-                    },
+                    onSaved: (value) => _email = value!,
                   ),
                   CustomTextField(
                     label: 'Password',
                     obscureText: true,
+                    controller: _passwordController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your password';
@@ -76,25 +75,33 @@ class _SignupScreenState extends State<SignupScreen> {
                       }
                       return null;
                     },
-                    onSaved: (value) {
-                      _password = value!;
-                    },
                   ),
                   CustomTextField(
                     label: 'Confirm Password',
                     obscureText: true,
+                    controller: _confirmPasswordController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please confirm your password';
                       }
-                      if (value != _password) {
+                      if (value != _passwordController.text) {
                         return 'Passwords do not match';
                       }
                       return null;
                     },
-                    onSaved: (value) {
-                      _confirmPassword = value!;
-                    },
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: _desiredRole,
+                    items: const [
+                      DropdownMenuItem(value: 'patient', child: Text('Patient')),
+                      DropdownMenuItem(value: 'doctor', child: Text('Doctor')),
+                    ],
+                    onChanged: (value) => setState(() => _desiredRole = value!),
+                    decoration: const InputDecoration(
+                      labelText: 'Role',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   if (_errorMessage != null)
@@ -126,23 +133,32 @@ class _SignupScreenState extends State<SignupScreen> {
         _errorMessage = null;
       });
 
-      // Implement signup logic via backend API
-      bool success = await _authService.signup(_username, _email, _password);
+      bool success = await _authService.signup(
+        _username,
+        _email,
+        _passwordController.text,
+        _desiredRole,
+      );
 
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Signup successful. Wait for admin approval.')),
+          const SnackBar(
+            content: Text('Signup successful. Wait for admin approval if doctor candidate.'),
+          ),
         );
         Navigator.pop(context);
       } else {
-        setState(() {
-          _errorMessage = 'Signup failed. Please try again.';
-        });
+        setState(() => _errorMessage = 'Signup failed. Please try again.');
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 }

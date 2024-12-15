@@ -1,5 +1,3 @@
-// lib/widgets/custom_text_field.dart
-
 import 'package:flutter/material.dart';
 
 class CustomTextField extends StatelessWidget {
@@ -7,6 +5,7 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final FormFieldValidator<String>? validator;
   final FormFieldSetter<String>? onSaved;
+  final TextEditingController? controller; // Added controller parameter
 
   const CustomTextField({
     Key? key,
@@ -14,15 +13,23 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.validator,
     this.onSaved,
+    this.controller, // Accept controller
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      decoration: InputDecoration(labelText: label),
-      obscureText: obscureText,
-      validator: validator,
-      onSaved: onSaved,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
+        controller: controller, // Attach the controller
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
+        obscureText: obscureText,
+        validator: validator,
+        onSaved: onSaved,
+      ),
     );
   }
 }

@@ -8,6 +8,8 @@ class ApiAuthenticationService {
   final String keycloakUrl = 'http://localhost:8080/realms/medical-realm/protocol/openid-connect';
   final String clientId = 'medical-frontend';
   final FlutterSecureStorage storage = const FlutterSecureStorage();
+  final String backendAuthUrl = 'http://localhost:8081/auth/signup';
+
 
   // Login method
   Future<bool> login(String username, String password) async {
@@ -65,12 +67,30 @@ class ApiAuthenticationService {
     return await storage.read(key: 'refresh_token');
   }
 
-  // Signup method (Placeholder)
-  Future<bool> signup(String username, String email, String password) async {
-    // Implement user signup via backend API
-    // This function should call your backend to create a user in Keycloak
-    // For now, return false as a placeholder
-    return false;
+// Signup method
+  Future<bool> signup(String username, String email, String password, String desiredRole) async {
+    try {
+      final response = await http.post(
+        Uri.parse(backendAuthUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'username': username,
+          'email': email,
+          'password': password,
+          'desiredRole': desiredRole, // "patient" or "doctor"
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        // Optionally parse the error response for more info
+        return false;
+      }
+    } catch (e) {
+      // Handle exceptions
+      return false;
+    }
   }
 
   // Refresh Access Token (Optional)
