@@ -68,7 +68,8 @@ class ApiAuthenticationService {
   }
 
 // Signup method
-  Future<bool> signup(String username, String email, String password, String desiredRole) async {
+  Future<bool> signup(String username, String email, String password, String desiredRole,
+      {required String firstName, required String lastName}) async {
     try {
       final response = await http.post(
         Uri.parse(backendAuthUrl),
@@ -78,6 +79,8 @@ class ApiAuthenticationService {
           'email': email,
           'password': password,
           'desiredRole': desiredRole, // "patient" or "doctor"
+          'firstName': firstName,
+          'lastName': lastName,
         }),
       );
 

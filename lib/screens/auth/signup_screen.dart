@@ -14,9 +14,12 @@ class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final ApiAuthenticationService _authService = ApiAuthenticationService();
 
-  // Controllers for password fields
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+
+  // New controllers for firstName, lastName
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
 
   String _username = '';
   String _email = '';
@@ -61,6 +64,26 @@ class _SignupScreenState extends State<SignupScreen> {
                       return null;
                     },
                     onSaved: (value) => _email = value!,
+                  ),
+                  CustomTextField(
+                    label: 'First Name',
+                    controller: _firstNameController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your first name';
+                      }
+                      return null;
+                    },
+                  ),
+                  CustomTextField(
+                    label: 'Last Name',
+                    controller: _lastNameController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your last name';
+                      }
+                      return null;
+                    },
                   ),
                   CustomTextField(
                     label: 'Password',
@@ -138,6 +161,8 @@ class _SignupScreenState extends State<SignupScreen> {
         _email,
         _passwordController.text,
         _desiredRole,
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
       );
 
       setState(() => _isLoading = false);
@@ -159,6 +184,8 @@ class _SignupScreenState extends State<SignupScreen> {
   void dispose() {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     super.dispose();
   }
 }

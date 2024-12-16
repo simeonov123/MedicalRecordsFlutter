@@ -8,22 +8,57 @@ import 'api_service.dart';
 class UserService {
   final ApiService _apiService = ApiService();
 
-  // Fetch all users
-  Future<List<User>> fetchAllUsers() async { // Removed accessToken parameter
+  // GET /users
+  Future<List<User>> fetchAllUsers() async {
     final response = await _apiService.get('/users');
-
     if (response.statusCode == 200) {
       List<dynamic> usersJson = json.decode(response.body);
-      return usersJson.map((json) => User.fromJson(json)).toList();
+      return usersJson.map((jsonData) => User.fromJson(jsonData)).toList();
     } else {
       throw Exception('Failed to load users');
     }
   }
 
-  // Update user role
-  Future<bool> updateUserRole(int userId, String role) async { // Adjusted parameters
-    final response = await _apiService.put('/users/$userId/role', body: {'role': role});
-
+  // PUT /users/{userId}/role { role: "doctor" }
+  Future<bool> updateUserRole(String userId, String newRole) async {
+    final response = await _apiService.put(
+      '/users/$userId/role',
+      body: {'role': newRole},
+    );
     return response.statusCode == 200;
+  }
+
+  // PUT /users/{userId}/verify-email?verified=true/false
+  Future<bool> verifyUserEmail(String userId, bool verified) async {
+    final response = await _apiService.put(
+      '/users/$userId/verify-email?verified=$verified',
+    );
+    return response.statusCode == 200;
+  }
+
+  // DELETE /users/{userId}
+  Future<bool> deleteUser(String userId) async {
+    final resp = await _apiService.delete('/users/$userId');
+    return resp.statusCode == 204;
+  }
+
+  // PUT /users/{userId}/details
+  Future<bool> updateUserDetails(
+      String userId,
+      String email,
+      String firstName,
+      String lastName,
+      String username,
+      bool emailVerified,
+      ) async {
+    final body = {
+      'email': email,
+      'firstName': firstName,
+      'lastName': lastName,
+      'username': username,
+      'emailVerified': emailVerified,
+    };
+    final resp = await _apiService.put('/users/$userId/details', body: body);
+    return resp.statusCode == 200;
   }
 }
