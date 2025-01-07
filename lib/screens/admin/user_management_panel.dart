@@ -1,12 +1,14 @@
+// lib/screens/admin/user_management_panel.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../domain/doctor.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/user_provider.dart';
 import '../../provider/doctor_provider.dart';
 import '../../provider/patient_provider.dart';
-import '../../domain/user.dart';
-import '../../domain/doctor.dart';
+import '../../domain/patient.dart';
 
 class UserManagementPanel extends StatefulWidget {
   const UserManagementPanel({Key? key}) : super(key: key);
@@ -16,8 +18,7 @@ class UserManagementPanel extends StatefulWidget {
 }
 
 class _UserManagementPanelState extends State<UserManagementPanel> {
-  /// For each patient, store the selected doctor ID.
-  final Map<String, int?> _selectedDoctorByPatient = {};
+  final Map<int, int?> _selectedDoctorByPatient = {};
 
   @override
   void initState() {
@@ -25,8 +26,11 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
     Future.microtask(() {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final doctorProvider = Provider.of<DoctorProvider>(context, listen: false);
+      final patientProvider = Provider.of<PatientProvider>(context, listen: false);
+
       userProvider.fetchUsers();
       doctorProvider.fetchDoctors();
+      patientProvider.fetchPatients();
     });
   }
 
@@ -37,11 +41,10 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
     final patientProvider = Provider.of<PatientProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    final usersLoading = userProvider.isLoading || doctorProvider.isLoading;
-    final usersError   = userProvider.error ?? doctorProvider.error;
+    final usersLoading = userProvider.isLoading || doctorProvider.isLoading || patientProvider.isLoading;
+    final usersError = userProvider.error ?? doctorProvider.error ?? patientProvider.error;
 
-    // Filter the lists
-    final patients = userProvider.users.where((u) => u.role == 'patient').toList();
+    final patients = patientProvider.patients;
     final doctorCandidates = userProvider.users.where((u) => u.role == 'user').toList();
     final normalUsers = userProvider.users.where((u) => u.role != 'user').toList();
 
@@ -63,9 +66,7 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
           : (usersError != null)
           ? Center(child: Text('Error: $usersError'))
           : ListView(
-        // A single ListView that scrolls the entire content
         children: [
-          // PATIENTS SECTION
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
@@ -73,7 +74,6 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-          // We build each "patient row" as a simple widget
           ...patients.map((patient) {
             final selectedDocId = _selectedDoctorByPatient[patient.id] ?? null;
 
@@ -81,15 +81,22 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Card(
                 child: ListTile(
-                  title: Text('${patient.username} (${patient.email})'),
+                  title: Text('${patient.name} (EGN: ${patient.egn})'),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text('Assign Primary Doctor:'),
                       DropdownButton<int>(
-                        isExpanded: true, // allow the button to take the full width
+                        isExpanded: true,
                         value: selectedDocId,
-                        hint: const Text('Select a Doctor'),
+                        hint: Text(
+                          patient.primaryDoctorId != 0
+                              ? doctorProvider.doctors.firstWhere(
+                                (doc) => doc.id == patient.primaryDoctorId,
+                            orElse: () => Doctor(id: 0, keycloakUserId: '', name: 'No Doctor Assigned', specialties: '', primaryCare: false),
+                          ).name
+                              : 'Select a Doctor',
+                        ),
                         items: doctorProvider.doctors.map((doc) {
                           return DropdownMenuItem<int>(
                             value: doc.id,
@@ -107,18 +114,8 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
                         onPressed: (selectedDocId == null)
                             ? null
                             : () async {
-                          final patientId = patient.id;
-                          if (patientId == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Invalid patient ID.'),
-                              ),
-                            );
-                            return;
-                          }
-
                           final success = await patientProvider.assignPrimaryDoctor(
-                            patientId,
+                            patient.id,
                             selectedDocId!,
                           );
                           if (success) {
@@ -137,14 +134,40 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
                         },
                         child: const Text('Assign Primary Doctor'),
                       ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Text('Health Insurance Paid: '),
+                          Switch(
+                            value: patient.healthInsurancePaid,
+                            onChanged: (value) async {
+                              final success = await patientProvider.updateHealthInsuranceStatus(
+                                patient.id,
+                                value,
+                              );
+                              if (success) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Health insurance status updated successfully'),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Failed to update health insurance status'),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ),
             );
           }),
-
-          // DOCTOR CANDIDATES
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
@@ -178,8 +201,6 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
               ),
             );
           }),
-
-          // OTHER USERS
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
@@ -188,8 +209,7 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
             ),
           ),
           ...normalUsers.map((user) {
-            // normalUsers includes admin, doctor, patient (but not "user" role).
-            final canShowDropdown = <String>['admin','doctor','patient'].contains(user.role);
+            final canShowDropdown = <String>['admin', 'doctor', 'patient'].contains(user.role);
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -234,7 +254,7 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
                       if (canShowDropdown)
                         DropdownButton<String>(
                           value: user.role,
-                          items: <String>['admin','doctor','patient'].map((String val) {
+                          items: <String>['admin', 'doctor', 'patient'].map((String val) {
                             return DropdownMenuItem<String>(
                               value: val,
                               child: Text(val),
