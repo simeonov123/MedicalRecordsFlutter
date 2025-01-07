@@ -45,7 +45,7 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
     final usersError = userProvider.error ?? doctorProvider.error ?? patientProvider.error;
 
     final patients = patientProvider.patients;
-    final doctorCandidates = userProvider.users.where((u) => u.role == 'user').toList();
+    final doctorCandidates = userProvider.users.where((u) => u.role == 'wannaBeDoctor').toList();
     final normalUsers = userProvider.users.where((u) => u.role != 'user').toList();
 
     return Scaffold(
@@ -57,6 +57,14 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
             onPressed: () {
               authProvider.logout();
               Navigator.pushReplacementNamed(context, '/');
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              userProvider.fetchUsers();
+              doctorProvider.fetchDoctors();
+              patientProvider.fetchPatients();
             },
           ),
         ],
@@ -75,7 +83,12 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
             ),
           ),
           ...patients.map((patient) {
-            final selectedDocId = _selectedDoctorByPatient[patient.id] ?? null;
+            final selectedDocId = _selectedDoctorByPatient[patient.id];
+            final doctorExists = doctorProvider.doctors.any((doc) => doc.id == selectedDocId);
+
+            if (!doctorExists) {
+              _selectedDoctorByPatient[patient.id] = null;
+            }
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -88,15 +101,8 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
                       const Text('Assign Primary Doctor:'),
                       DropdownButton<int>(
                         isExpanded: true,
-                        value: selectedDocId,
-                        hint: Text(
-                          patient.primaryDoctorId != 0
-                              ? doctorProvider.doctors.firstWhere(
-                                (doc) => doc.id == patient.primaryDoctorId,
-                            orElse: () => Doctor(id: 0, keycloakUserId: '', name: 'No Doctor Assigned', specialties: '', primaryCare: false),
-                          ).name
-                              : 'Select a Doctor',
-                        ),
+                        value: _selectedDoctorByPatient[patient.id],
+                        hint: const Text('Select Doctor'),
                         items: doctorProvider.doctors.map((doc) {
                           return DropdownMenuItem<int>(
                             value: doc.id,
@@ -111,24 +117,20 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
                       ),
                       const SizedBox(height: 8),
                       ElevatedButton(
-                        onPressed: (selectedDocId == null)
+                        onPressed: (_selectedDoctorByPatient[patient.id] == null)
                             ? null
                             : () async {
                           final success = await patientProvider.assignPrimaryDoctor(
                             patient.id,
-                            selectedDocId!,
+                            _selectedDoctorByPatient[patient.id]!,
                           );
                           if (success) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Primary doctor assigned successfully'),
-                              ),
+                              const SnackBar(content: Text('Primary doctor assigned successfully')),
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Failed to assign primary doctor'),
-                              ),
+                              const SnackBar(content: Text('Failed to assign primary doctor')),
                             );
                           }
                         },
@@ -141,21 +143,14 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
                           Switch(
                             value: patient.healthInsurancePaid,
                             onChanged: (value) async {
-                              final success = await patientProvider.updateHealthInsuranceStatus(
-                                patient.id,
-                                value,
-                              );
+                              final success = await patientProvider.updateHealthInsuranceStatus(patient.id, value);
                               if (success) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Health insurance status updated successfully'),
-                                  ),
+                                  const SnackBar(content: Text('Health insurance status updated successfully')),
                                 );
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Failed to update health insurance status'),
-                                  ),
+                                  const SnackBar(content: Text('Failed to update health insurance status')),
                                 );
                               }
                             },
@@ -216,7 +211,15 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
               child: Card(
                 child: ListTile(
                   title: Text('${user.username} (${user.email})'),
-                  subtitle: Text('Role: ${user.role}'),
+                  subtitle: user.role == 'wannaBeDoctor'
+                      ? const Text(
+                    'Awaiting Approval',
+                    style: TextStyle(
+                      color: Colors.grey, // Style it beautifully
+                      fontStyle: FontStyle.italic,
+                    ),
+                  )
+                      : Text('Role: ${user.role}'),
                   leading: user.emailVerified
                       ? const Icon(Icons.check_circle, color: Colors.green)
                       : IconButton(
@@ -227,6 +230,10 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
                       if (verified) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Email verified successfully')),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Failed to verify email')),
                         );
                       }
                     },
@@ -252,31 +259,38 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
                       ),
                       const SizedBox(width: 8),
                       if (canShowDropdown)
-                        DropdownButton<String>(
-                          value: user.role,
-                          items: <String>['admin', 'doctor', 'patient'].map((String val) {
-                            return DropdownMenuItem<String>(
-                              value: val,
-                              child: Text(val),
-                            );
-                          }).toList(),
-                          onChanged: (String? newRole) async {
-                            if (newRole != null && newRole != user.role) {
-                              final success = await userProvider.updateUserRole(user.id, newRole);
-                              if (success) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Role updated successfully')),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Failed to update role')),
-                                );
+                        if (user.role == 'wannaBeDoctor')
+                          const Text(
+                            'Awaiting Approval',
+                            style: TextStyle(
+                              color: Colors.grey, // Style it beautifully
+                              fontStyle: FontStyle.italic,
+                            ),
+                          )
+                        else
+                          DropdownButton<String>(
+                            value: user.role,
+                            items: <String>['admin', 'doctor', 'patient'].map((String val) {
+                              return DropdownMenuItem<String>(
+                                value: val,
+                                child: Text(val),
+                              );
+                            }).toList(),
+                            onChanged: (String? newRole) async {
+                              if (newRole != null && newRole != user.role) {
+                                final success = await userProvider.updateUserRole(user.id, newRole);
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Role updated successfully')),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Failed to update role')),
+                                  );
+                                }
                               }
-                            }
-                          },
-                        )
-                      else
-                        Text('Role: ${user.role}'),
+                            },
+                          ),
                     ],
                   ),
                 ),
