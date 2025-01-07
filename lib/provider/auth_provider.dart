@@ -79,4 +79,14 @@ class AuthProvider with ChangeNotifier {
       }
     });
   }
+
+  String? getUserId() {
+    if (_accessToken != null) {
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(_accessToken!);
+      return decodedToken['sub']; // Keycloak typically uses 'sub' for user ID.
+    }
+    return null;
+  }
+
+
 }

@@ -16,10 +16,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-
-  // New controllers for firstName, lastName
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _egnController = TextEditingController(); // New controller for EGN
 
   String _username = '';
   String _email = '';
@@ -86,6 +85,16 @@ class _SignupScreenState extends State<SignupScreen> {
                     },
                   ),
                   CustomTextField(
+                    label: 'EGN', // New EGN field
+                    controller: _egnController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your EGN';
+                      }
+                      return null;
+                    },
+                  ),
+                  CustomTextField(
                     label: 'Password',
                     obscureText: true,
                     controller: _passwordController,
@@ -94,7 +103,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         return 'Please enter your password';
                       }
                       if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                        return 'Password must be at least 6 characters long';
                       }
                       return null;
                     },
@@ -163,29 +172,21 @@ class _SignupScreenState extends State<SignupScreen> {
         _desiredRole,
         firstName: _firstNameController.text,
         lastName: _lastNameController.text,
+        egn: _egnController.text, // Pass EGN to the signup method
       );
 
       setState(() => _isLoading = false);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Signup successful. Wait for admin approval if doctor candidate.'),
-          ),
+          const SnackBar(content: Text('Registration successful')),
         );
-        Navigator.pop(context);
+        Navigator.pushReplacementNamed(context, '/');
       } else {
-        setState(() => _errorMessage = 'Signup failed. Please try again.');
+        setState(() {
+          _errorMessage = 'Registration failed';
+        });
       }
     }
-  }
-
-  @override
-  void dispose() {
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    super.dispose();
   }
 }

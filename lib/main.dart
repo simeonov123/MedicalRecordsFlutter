@@ -1,10 +1,12 @@
 // lib/main.dart
 
 import 'package:flutter/material.dart';
+import 'package:medical_records_frontend/provider/patient_provider.dart';
 import 'package:provider/provider.dart';
 import 'provider/auth_provider.dart';
 import 'provider/user_provider.dart';
-import 'provider/doctor_provider.dart'; // Import DoctorProvider
+import 'provider/doctor_provider.dart';
+import 'provider/appointment_provider.dart'; // Import AppointmentProvider
 import 'routes.dart';
 
 void main() {
@@ -13,7 +15,10 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => DoctorProvider()), // Add DoctorProvider
+        ChangeNotifierProvider(create: (_) => DoctorProvider()),
+        ChangeNotifierProvider(create: (_) => AppointmentProvider()),
+        ChangeNotifierProvider(create: (_) => PatientProvider()),
+
       ],
       child: const MyApp(),
     ),
