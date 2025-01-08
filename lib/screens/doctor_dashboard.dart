@@ -111,9 +111,9 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                     final appointment = appointments[index];
                     return Card(
                       child: ListTile(
-                        title: Text('Patient ID: ${appointment.patientId}'),
+                        title: Text('Patient ID: ${appointment.patient.id}'),
                         subtitle: Text(
-                          'Treatment: ${appointment.treatment}\nDate: ${appointment.date.toLocal()}',
+                          'Treatment:',
                         ),
                       ),
                     );

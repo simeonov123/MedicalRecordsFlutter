@@ -17,6 +17,8 @@ class AuthProvider with ChangeNotifier {
   String? get accessToken => _accessToken;
   List<String> get roles => _roles;
 
+  get keycloakUserId => getUserId();
+
   // Login method
   Future<bool> login(String username, String password) async {
     bool success = await _authService.login(username, password);

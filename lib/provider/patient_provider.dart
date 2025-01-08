@@ -8,8 +8,11 @@ import '../service/api_service.dart';
 class PatientProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
   List<Patient> _patients = [];
+  Patient? _patient;
   bool _isLoading = false;
   String? _error;
+
+  Patient? get patient => _patient;
 
   List<Patient> get patients => _patients;
   bool get isLoading => _isLoading;
@@ -19,6 +22,20 @@ class PatientProvider with ChangeNotifier {
     final resp = await _apiService.put('/patients/$patientId/primary-doctor/$doctorId');
     return resp.statusCode == 200;
   }
+
+  Future<Patient?> fetchPatientDataViaKeycloakUserId(String keycloakUserId) async {
+    final response = await _apiService.get('/patients/keycloak-user-id/$keycloakUserId');
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      _patient = Patient.fromJson(jsonData);
+      _error = null;
+    } else {
+      _error = 'Failed to load patient';
+    }
+    notifyListeners();
+    return _patient;
+  }
+
 
   Future<bool> updateHealthInsuranceStatus(int patientId, bool status) async {
     final resp = await _apiService.put('/patients/$patientId/health-insurance', body: {'healthInsurancePaid': status});
@@ -60,4 +77,6 @@ class PatientProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  getPatient() {}
 }
