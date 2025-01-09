@@ -1,3 +1,5 @@
+// lib/domain/treatment.dart
+
 import 'prescription.dart';
 
 class Treatment {
@@ -6,6 +8,7 @@ class Treatment {
   final DateTime updatedAt;
   final DateTime startDate;
   final DateTime endDate;
+  final String description;
   final List<Prescription> prescriptions;
 
   Treatment({
@@ -14,6 +17,7 @@ class Treatment {
     required this.updatedAt,
     required this.startDate,
     required this.endDate,
+    required this.description,
     required this.prescriptions,
   });
 
@@ -24,6 +28,7 @@ class Treatment {
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : DateTime.now(),
       startDate: DateTime.parse(json['startDate']),
       endDate: DateTime.parse(json['endDate']),
+      description: json['description'],
       prescriptions: (json['prescriptions'] as List<dynamic>?)
           ?.map((prescription) => Prescription.fromJson(prescription))
           .toList() ?? [],

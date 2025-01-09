@@ -43,4 +43,37 @@ class AppointmentService {
       throw Exception('Failed to create appointment');
     }
   }
+
+
+  // Create new sick leave
+  Future<void> createSickLeave(int appointmentId, Map<String, dynamic> sickLeaveData) async {
+    final response = await _apiService.post('/appointments/$appointmentId/sick-leave', body: sickLeaveData);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to create sick leave');
+    }
+  }
+
+  // Update existing sick leave
+  Future<void> updateSickLeave(int appointmentId, int sickLeaveId, Map<String, dynamic> sickLeaveData) async {
+    final response = await _apiService.put('/appointments/$appointmentId/sick-leave/$sickLeaveId', body: sickLeaveData);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update sick leave');
+    }
+  }
+
+  // Create new diagnosis
+  Future<void> createDiagnosis(int appointmentId, Map<String, dynamic> diagnosisData) async {
+    final response = await _apiService.post('/appointments/$appointmentId/diagnosis', body: diagnosisData);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to create diagnosis');
+    }
+  }
+
+  // Update existing diagnosis
+  Future<void> updateDiagnosis(int appointmentId, int diagnosisId, Map<String, dynamic> diagnosisData) async {
+    final response = await _apiService.put('/appointments/$appointmentId/diagnosis/$diagnosisId', body: diagnosisData);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update diagnosis');
+    }
+  }
 }

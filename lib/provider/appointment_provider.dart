@@ -55,4 +55,25 @@ class AppointmentProvider with ChangeNotifier {
       return false;
     }
   }
+
+
+  Future<void> createSickLeave(int appointmentId, Map<String, dynamic> sickLeaveData) async {
+    await _appointmentService.createSickLeave(appointmentId, sickLeaveData);
+    await fetchAppointmentsForUser();
+  }
+
+  Future<void> updateSickLeave(int appointmentId, int sickLeaveId, Map<String, dynamic> sickLeaveData) async {
+    await _appointmentService.updateSickLeave(appointmentId, sickLeaveId, sickLeaveData);
+    await fetchAppointmentsForUser();
+  }
+
+  Future<void> createDiagnosis(int appointmentId, Map<String, dynamic> diagnosisData) async {
+    await _appointmentService.createDiagnosis(appointmentId, diagnosisData);
+    await fetchAppointmentsForUser();
+  }
+
+  Future<void> updateDiagnosis(int appointmentId, int diagnosisId, Map<String, dynamic> diagnosisData) async {
+    await _appointmentService.updateDiagnosis(appointmentId, diagnosisId, diagnosisData);
+    await fetchAppointmentsForUser();
+  }
 }

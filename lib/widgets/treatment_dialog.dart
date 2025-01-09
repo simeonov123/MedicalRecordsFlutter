@@ -22,6 +22,7 @@ class TreatmentDialog extends StatelessWidget {
             return ListTile(
               title: Text('Treatment ID: ${treatment.id}'),
               subtitle: Text(
+                'Description: ${treatment.description}\n'
                 'Start: ${DateFormat('yyyy-MM-dd').format(treatment.startDate)}\n'
                     'End: ${DateFormat('yyyy-MM-dd').format(treatment.endDate)}',
               ),

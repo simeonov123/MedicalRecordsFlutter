@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:medical_records_frontend/domain/doctor.dart';
 import 'package:provider/provider.dart';
+import '../../domain/patient.dart';
 import '../../provider/appointment_provider.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/patient_provider.dart';
@@ -32,6 +33,10 @@ class _PatientDashboardState extends State<PatientDashboard> {
     await patientProvider.fetchPatientDataViaKeycloakUserId(keycloakUserId);
     await doctorProvider.fetchDoctors();
 
+    final primaryDoctor = doctorProvider.doctors.firstWhere(
+          (doc) => doc.id == patientProvider.patient?.primaryDoctorId,
+    );
+
     if (patientProvider.patient != null) {
       final appointmentProvider = Provider.of<AppointmentProvider>(context, listen: false);
       await appointmentProvider.fetchAppointmentsForUser();
@@ -42,7 +47,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final patientProvider = Provider.of<PatientProvider>(context);
-    final doctorProvider = Provider.of<DoctorProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -64,7 +68,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
             return _buildMobileLayout();
           } else {
             // Tablet/Desktop Layout
-            return _buildDesktopLayout();
+            return _buildDesktopLayout(patientProvider);
           }
         },
       ),
@@ -72,6 +76,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
         onPressed: () {
           final patientId = Provider.of<PatientProvider>(context, listen: false).patient?.id;
           if (patientId != null) {
+            final doctorProvider = Provider.of<DoctorProvider>(context, listen: false);
             _showCreateAppointmentDialog(context, doctorProvider.doctors, patientId);
           }
         },
@@ -95,42 +100,53 @@ class _PatientDashboardState extends State<PatientDashboard> {
     );
   }
 
-  Widget _buildDesktopLayout() {
+  Widget _buildDesktopLayout(PatientProvider patientProvider) {
     return Row(
       children: [
-        Expanded(
-          flex: 1,
-          child: Container(
-            color: Colors.blueGrey[50],
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.person, size: 100, color: Colors.blueGrey),
-                SizedBox(height: 16),
-                Text(
-                  'Patient Details',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 2,
-          child: FutureBuilder<void>(
-            future: _fetchDataFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else {
-                return const AppointmentListWidget();
-              }
-            },
-          ),
-        ),
+        _buildPatientDetails(patientProvider.patient),
+        const Expanded(child: AppointmentListWidget()),
       ],
+    );
+  }
+
+  Widget _buildPatientDetails(Patient? patient) {
+    if (patient == null) {
+      return Container(
+        width: 300,
+        color: Colors.blueGrey[50],
+        child: const Center(
+          child: Text(
+            'No patient details available',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: 300,
+      color: Colors.blueGrey[50],
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Patient Details',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Text('Name: ${patient.name}', style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 8),
+          Text('EGN: ${patient.egn}', style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 8),
+          Text('Health Insurance Paid: ${patient.healthInsurancePaid ? "Yes" : "No"}', style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 8),
+          Text(
+            'Primary Doctor ID: ${patient.primaryDoctorId ?? "Not Assigned"}',
+            style: const TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
     );
   }
 
