@@ -14,7 +14,7 @@ class AppointmentService {
   // For a simpler approach, you might define an endpoint: GET /patients/{patientId}/appointments
   // Then call that from here:
 
-  Future<List<Appointment>> fetchAppointmentsForPatient() async {
+  Future<List<Appointment>> fetchAppointmentsForUser() async {
 
     final response = await _apiService.get('/appointments/getAppointmentsForLoggedInUser');
     if (response.statusCode == 200) {
@@ -29,17 +29,11 @@ class AppointmentService {
   Future<Appointment> createAppointment({
     required int patientId,
     required int doctorId,
-    required int diagnosisId,
-    required String treatment,
     required DateTime date,
-    int? sickLeaveDays,
   }) async {
     final body = {
       "patientId": patientId,
       "doctorId": doctorId,
-      "diagnosisId": diagnosisId,
-      "treatment": treatment,
-      "sickLeaveDays": sickLeaveDays,
       "date": date.toIso8601String(),
     };
     final response = await _apiService.post('/appointments', body: body);

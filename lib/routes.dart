@@ -1,7 +1,7 @@
 // lib/routes.dart
 
 import 'package:flutter/material.dart';
-import 'package:medical_records_frontend/screens/doctor_dashboard.dart';
+import 'package:medical_records_frontend/screens/doctor/doctor_dashboard.dart';
 import 'package:provider/provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';

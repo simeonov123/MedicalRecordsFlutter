@@ -8,19 +8,21 @@ class Appointment {
   final int id;
   final Patient patient;
   final Doctor doctor;
-  final List<Diagnosis> diagnoses;
-  final List<SickLeave> sickLeaves;
+  final DateTime appointmentDateTime; // New attribute
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final List<SickLeave> sickLeaves;
+  final List<Diagnosis> diagnoses;
 
   Appointment({
     required this.id,
     required this.patient,
     required this.doctor,
-    required this.diagnoses,
-    required this.sickLeaves,
+    required this.appointmentDateTime, // New attribute
     required this.createdAt,
     this.updatedAt,
+    required this.sickLeaves,
+    required this.diagnoses,
   });
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
@@ -28,14 +30,15 @@ class Appointment {
       id: json['id'],
       patient: Patient.fromJson(json['patient']),
       doctor: Doctor.fromJson(json['doctor']),
-      diagnoses: (json['diagnoses'] as List<dynamic>?)
-          ?.map((diagnosis) => Diagnosis.fromJson(diagnosis))
-          .toList() ?? [],
-      sickLeaves: (json['sickLeaves'] as List<dynamic>?)
-          ?.map((sickLeave) => SickLeave.fromJson(sickLeave))
-          .toList() ?? [],
+      appointmentDateTime: DateTime.parse(json['appointmentDateTime']), // New attribute
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      sickLeaves: (json['sickLeaves'] as List<dynamic>)
+          .map((sickLeave) => SickLeave.fromJson(sickLeave))
+          .toList(),
+      diagnoses: (json['diagnoses'] as List<dynamic>)
+          .map((diagnosis) => Diagnosis.fromJson(diagnosis))
+          .toList(),
     );
   }
 }

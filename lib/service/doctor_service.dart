@@ -8,10 +8,9 @@ import 'api_service.dart';
 class DoctorService {
   final ApiService _apiService = ApiService();
 
-  // Fetch doctors
+  // Fetch all doctors
   Future<List<Doctor>> fetchDoctors() async {
     final response = await _apiService.get('/doctors');
-
     if (response.statusCode == 200) {
       List<dynamic> doctorsJson = json.decode(response.body);
       return doctorsJson.map((json) => Doctor.fromJson(json)).toList();
@@ -20,16 +19,13 @@ class DoctorService {
     }
   }
 
-  Future<List<Appointment>> fetchAppointmentsForDoctor(
-      int doctorId, String startDate, String endDate) async {
-    final response = await _apiService.get(
-      '/reports/visits-for-doctor-in-period?doctorId=$doctorId&start=$startDate&end=$endDate',
-    );
+  // Fetch doctor by Keycloak User ID
+  Future<Doctor> fetchDoctorByKeycloakId() async {
+    final response = await _apiService.get('/doctors/doctor');
     if (response.statusCode == 200) {
-      List<dynamic> appointmentsJson = json.decode(response.body);
-      return appointmentsJson.map((json) => Appointment.fromJson(json)).toList();
+      return Doctor.fromJson(json.decode(response.body));
     } else {
-      throw Exception('Failed to fetch appointments.');
+      throw Exception('Failed to fetch doctor details');
     }
   }
 }

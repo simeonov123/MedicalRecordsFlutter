@@ -16,12 +16,12 @@ class AppointmentProvider with ChangeNotifier {
   String? get error => _error;
 
   // Fetch appointments for the currently logged-in patient
-  Future<List<Appointment>> fetchAppointmentsForPatient() async {
+  Future<List<Appointment>> fetchAppointmentsForUser() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _appointments = await _appointmentService.fetchAppointmentsForPatient();
+      _appointments = await _appointmentService.fetchAppointmentsForUser();
       _error = null;
     } catch (e) {
       _error = e.toString();
@@ -37,18 +37,12 @@ class AppointmentProvider with ChangeNotifier {
   Future<bool> createAppointment({
     required int patientId,
     required int doctorId,
-    required int diagnosisId,
-    required String treatment,
-    int? sickLeaveDays,
     required DateTime date,
   }) async {
     try {
       final apt = await _appointmentService.createAppointment(
         patientId: patientId,
         doctorId: doctorId,
-        diagnosisId: diagnosisId,
-        treatment: treatment,
-        sickLeaveDays: sickLeaveDays,
         date: date,
       );
       // Optionally add to local list
