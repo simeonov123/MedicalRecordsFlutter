@@ -1,9 +1,9 @@
-// lib/widgets/appointment_list_widget.dart
-
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:medical_records_frontend/widgets/sickLeave_dialog.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart'; // Import the intl package
 import '../provider/appointment_provider.dart';
+import 'diagnosis_dialog.dart';
 
 class AppointmentListWidget extends StatelessWidget {
   const AppointmentListWidget({Key? key}) : super(key: key);
@@ -24,31 +24,57 @@ class AppointmentListWidget extends StatelessWidget {
           itemCount: appointmentProvider.appointments.length,
           itemBuilder: (context, index) {
             final appointment = appointmentProvider.appointments[index];
-            final formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(appointment.createdAt);
+            final createdDate = DateFormat('yyyy-MM-dd – kk:mm').format(appointment.createdAt);
+            final updatedDate = appointment.updatedAt != null
+                ? DateFormat('yyyy-MM-dd – kk:mm').format(appointment.updatedAt!)
+                : 'N/A';
 
             return Card(
-              child: ExpansionTile(
-                title: Text('Appointment ID: ${appointment.id}'),
-                subtitle: Text('Doctor: ${appointment.doctor.name}, Date: $formattedDate'),
-                children: [
-                  ListTile(
-                    title: const Text('Patient Information'),
-                    subtitle: Text('Name: ${appointment.patient.name}, EGN: ${appointment.patient.egn}'),
-                  ),
-                  ...appointment.diagnoses.map((diagnosis) {
-                    return ListTile(
-                      title: Text('Diagnosis: ${diagnosis.statement}'),
-                      subtitle: Text('Diagnosed Date: ${DateFormat('yyyy-MM-dd').format(diagnosis.diagnosedDate)}'),
-                    );
-                  }).toList(),
-                  ...appointment.sickLeaves.map((sickLeave) {
-                    return ListTile(
-                      title: Text('Sick Leave Reason: ${sickLeave.reason}'),
-                      subtitle: Text(
-                          'From: ${DateFormat('yyyy-MM-dd').format(sickLeave.startDate)} To: ${DateFormat('yyyy-MM-dd').format(sickLeave.endDate)}'),
-                    );
-                  }).toList(),
-                ],
+              margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Appointment ID: ${appointment.id}',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text('Doctor: ${appointment.doctor.name}'),
+                    Text('Created At: $createdDate'),
+                    Text('Updated At: $updatedDate'),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Patient Information',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text('Name: ${appointment.patient.name}'),
+                    Text('EGN: ${appointment.patient.egn}'),
+                    const SizedBox(height: 16),
+                    if (appointment.sickLeaves.isNotEmpty)
+                      ElevatedButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => SickLeaveDialog(sickLeaves: appointment.sickLeaves),
+                          );
+                        },
+                        child: const Text('View Sick Leave Details'),
+                      ),
+                    if (appointment.diagnoses.isNotEmpty)
+                      ElevatedButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => DiagnosisDialog(diagnoses: appointment.diagnoses),
+                          );
+                        },
+                        child: const Text('View Diagnosis Details'),
+                      ),
+                  ],
+                ),
               ),
             );
           },
