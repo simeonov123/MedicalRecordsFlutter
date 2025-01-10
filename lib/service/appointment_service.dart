@@ -92,4 +92,20 @@ class AppointmentService {
   Future<bool> deleteDiagnosis(int appointmentId, int diagnosisId) async {
     final response = await _apiService.delete('/appointments/$appointmentId/diagnosis/$diagnosisId');
     return response.statusCode == 204;
-  }}
+  }
+
+  Future<Appointment> updateAppointment(int appointmentId, DateTime date,
+      int? doctorId) async {
+    final body = {
+      if (doctorId != null) "doctorId": doctorId,
+      "appointmentDateTime": date.toIso8601String(),
+    };
+    final response = await _apiService.put(
+        '/appointments/$appointmentId', body: body);
+    if (response.statusCode == 200) {
+      return Appointment.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to update appointment');
+    }
+  }
+}

@@ -46,8 +46,7 @@ class RoleGuard extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    bool hasAccess =
-    authProvider.roles.any((role) => allowedRoles.contains(role));
+    bool hasAccess = authProvider.roles.any((role) => allowedRoles.contains(role));
     if (!hasAccess) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(

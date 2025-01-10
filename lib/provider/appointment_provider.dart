@@ -14,7 +14,9 @@ class AppointmentProvider with ChangeNotifier {
   String? _error;
 
   List<Appointment> get appointments => _appointments;
+
   bool get isLoading => _isLoading;
+
   String? get error => _error;
 
   // Fetch appointments for the currently logged-in patient
@@ -59,26 +61,29 @@ class AppointmentProvider with ChangeNotifier {
   }
 
 
-  Future<void> createSickLeave(int appointmentId, Map<String, dynamic> sickLeaveData) async {
+  Future<void> createSickLeave(int appointmentId,
+      Map<String, dynamic> sickLeaveData) async {
     await _appointmentService.createSickLeave(appointmentId, sickLeaveData);
     await fetchAppointmentsForUser();
   }
 
-  Future<SickLeave> updateSickLeave(int appointmentId, int sickLeaveId, Map<String, dynamic> sickLeaveData) async {
+  Future<SickLeave> updateSickLeave(int appointmentId, int sickLeaveId,
+      Map<String, dynamic> sickLeaveData) async {
     try {
-      SickLeave updatedFetchedSickLeave = await _appointmentService.updateSickLeave(appointmentId, sickLeaveId, sickLeaveData);
+      SickLeave updatedFetchedSickLeave = await _appointmentService
+          .updateSickLeave(appointmentId, sickLeaveId, sickLeaveData);
 
       // Find the matching appointment
       final appointment = appointments.firstWhere((a) => a.id == appointmentId);
 
       // Find the index of the sick leave to be updated
-      final sickLeaveIndex = appointment.sickLeaves.indexWhere((s) => s.id == sickLeaveId);
+      final sickLeaveIndex = appointment.sickLeaves.indexWhere((s) =>
+      s.id == sickLeaveId);
 
       if (sickLeaveIndex != -1) {
         // Replace the old sick leave with the updated one
         appointment.sickLeaves[sickLeaveIndex] = updatedFetchedSickLeave;
       } else {
-
         return updatedFetchedSickLeave;
       }
 
@@ -103,11 +108,14 @@ class AppointmentProvider with ChangeNotifier {
 
   // Delete sick leave
   Future<bool> deleteSickLeave(int appointmentId, int sickLeaveId) async {
-    bool success = await _appointmentService.deleteSickLeave(appointmentId, sickLeaveId);
+    bool success = await _appointmentService.deleteSickLeave(
+        appointmentId, sickLeaveId);
     if (success) {
-      final appointmentIndex = _appointments.indexWhere((appointment) => appointment.id == appointmentId);
+      final appointmentIndex = _appointments.indexWhere((
+          appointment) => appointment.id == appointmentId);
       if (appointmentIndex != -1) {
-        _appointments[appointmentIndex].sickLeaves.removeWhere((sickLeave) => sickLeave.id == sickLeaveId);
+        _appointments[appointmentIndex].sickLeaves.removeWhere((
+            sickLeave) => sickLeave.id == sickLeaveId);
         notifyListeners();
       }
     }
@@ -115,20 +123,24 @@ class AppointmentProvider with ChangeNotifier {
   }
 
 
-  Future<void> createDiagnosis(int appointmentId, Map<String, dynamic> diagnosisData) async {
+  Future<void> createDiagnosis(int appointmentId,
+      Map<String, dynamic> diagnosisData) async {
     await _appointmentService.createDiagnosis(appointmentId, diagnosisData);
     await fetchAppointmentsForUser();
   }
 
-  Future<Diagnosis> updateDiagnosis(int appointmentId, int diagnosisId, Map<String, dynamic> diagnosisData) async {
+  Future<Diagnosis> updateDiagnosis(int appointmentId, int diagnosisId,
+      Map<String, dynamic> diagnosisData) async {
     try {
-      Diagnosis updatedFetchedDiagnosis = await _appointmentService.updateDiagnosis(appointmentId, diagnosisId, diagnosisData);
+      Diagnosis updatedFetchedDiagnosis = await _appointmentService
+          .updateDiagnosis(appointmentId, diagnosisId, diagnosisData);
 
       // Find the matching appointment
       final appointment = appointments.firstWhere((a) => a.id == appointmentId);
 
       // Find the index of the diagnosis to be updated
-      final diagnosisIndex = appointment.diagnoses.indexWhere((d) => d.id == diagnosisId);
+      final diagnosisIndex = appointment.diagnoses.indexWhere((d) =>
+      d.id == diagnosisId);
 
       if (diagnosisIndex != -1) {
         // Replace the old diagnosis with the updated one
@@ -148,19 +160,47 @@ class AppointmentProvider with ChangeNotifier {
         statement: '',
         diagnosedDate: DateTime.now(),
         createdAt: DateTime.now(),
-        updatedAt: DateTime.now(), treatments: [],
+        updatedAt: DateTime.now(),
+        treatments: [],
       );
     }
   }
 
   Future<bool> deleteDiagnosis(int appointmentId, int diagnosisId) async {
-    bool success = await _appointmentService.deleteDiagnosis(appointmentId, diagnosisId);
+    bool success = await _appointmentService.deleteDiagnosis(
+        appointmentId, diagnosisId);
     if (success) {
-      int appointmentIndex = _appointments.indexWhere((appointment) => appointment.id == appointmentId);
+      int appointmentIndex = _appointments.indexWhere((
+          appointment) => appointment.id == appointmentId);
       if (appointmentIndex != -1) {
-        _appointments[appointmentIndex].diagnoses.removeWhere((diagnosis) => diagnosis.id == diagnosisId);
+        _appointments[appointmentIndex].diagnoses.removeWhere((
+            diagnosis) => diagnosis.id == diagnosisId);
         notifyListeners();
       }
     }
     return success;
-  }}
+  }
+
+
+  Future<Appointment> updateAppointment(int appointmentId, DateTime date,
+      int? doctorId) async {
+    final updatedAppointment = await _appointmentService.updateAppointment(
+        appointmentId, date, doctorId);
+    int index = _appointments.indexWhere((appointment) =>
+    appointment.id == appointmentId);
+    if (index != -1) {
+      _appointments[index] = updatedAppointment;
+      notifyListeners();
+    }
+    return updatedAppointment;
+  }
+
+  void updateLocalAppointment(Appointment updatedAppointment) {
+    int index = _appointments.indexWhere((appointment) =>
+    appointment.id == updatedAppointment.id);
+    if (index != -1) {
+      _appointments[index] = updatedAppointment;
+      notifyListeners();
+    }
+  }
+}

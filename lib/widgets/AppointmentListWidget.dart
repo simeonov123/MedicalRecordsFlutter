@@ -1,5 +1,3 @@
-// lib/widgets/AppointmentListWidget.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +7,8 @@ import 'sick_leave_form.dart';
 import 'diagnosis_form.dart';
 import 'sickLeave_dialog.dart';
 import 'diagnosis_dialog.dart';
+import 'edit_appointment_form.dart';
+import 'role_based_widget.dart';
 
 class AppointmentListWidget extends StatelessWidget {
   const AppointmentListWidget({Key? key}) : super(key: key);
@@ -181,6 +181,24 @@ class AppointmentListWidget extends StatelessWidget {
                               ),
                             ),
                         ],
+                      ),
+                      const SizedBox(height: 16),
+                      RoleBasedWidget(
+                        allowedRoles: ['admin', 'doctor'],
+                        child: ElevatedButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => EditAppointmentForm(
+                                appointment: appointment,
+                                onUpdate: (updatedAppointment) {
+                                  appointmentProvider.updateLocalAppointment(updatedAppointment);
+                                },
+                              ),
+                            );
+                          },
+                          child: const Text('Edit'),
+                        ),
                       ),
                     ],
                   ),

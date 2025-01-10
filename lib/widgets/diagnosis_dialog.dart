@@ -93,7 +93,7 @@ class _DiagnosisDialogState extends State<DiagnosisDialog> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
-                        textStyle: const TextStyle(color: Colors.white),
+                        foregroundColor: Colors.white,
                       ),
                       child: const Text('Delete'),
                     ),

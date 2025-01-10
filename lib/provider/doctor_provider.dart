@@ -17,7 +17,7 @@ class DoctorProvider with ChangeNotifier {
   // Fetch all doctors
   Future<void> fetchDoctors() async {
     _isLoading = true;
-    notifyListeners();
+    _notifySafely();
 
     try {
       _doctors = await _doctorService.fetchDoctors();
@@ -26,14 +26,14 @@ class DoctorProvider with ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
-      notifyListeners();
+      _notifySafely();
     }
   }
 
   // Fetch current doctor by Keycloak User ID
   Future<void> fetchCurrentDoctor() async {
     _isLoading = true;
-    notifyListeners();
+    _notifySafely();
 
     try {
       _currentDoctor = await _doctorService.fetchDoctorByKeycloakId();
@@ -42,7 +42,17 @@ class DoctorProvider with ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
-      notifyListeners();
+      _notifySafely();
+    }
+  }
+
+  // Safe notify method
+  void _notifySafely() {
+    if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed ||
+        WidgetsBinding.instance.lifecycleState == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 }

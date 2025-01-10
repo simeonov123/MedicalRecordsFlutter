@@ -94,7 +94,7 @@ class _SickLeaveDialogState extends State<SickLeaveDialog> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
-                        textStyle: const TextStyle(color: Colors.white),
+                        foregroundColor: Colors.white,
                       ),
                       child: const Text('Delete'),
                     ),
