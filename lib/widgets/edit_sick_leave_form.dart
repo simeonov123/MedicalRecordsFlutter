@@ -1,36 +1,51 @@
-// lib/widgets/sick_leave_form.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../domain/sick_leave.dart';
 import '../provider/appointment_provider.dart';
 
-class SickLeaveForm extends StatefulWidget {
+class EditSickLeaveForm extends StatefulWidget {
   final int appointmentId;
-  final List<dynamic>? existingSickLeaves; // Add this line
+  final SickLeave sickLeave;
+  final Function(SickLeave) onUpdate;
 
-  const SickLeaveForm({Key? key, required this.appointmentId, this.existingSickLeaves}) : super(key: key);
+  const EditSickLeaveForm({
+    Key? key,
+    required this.appointmentId,
+    required this.sickLeave,
+    required this.onUpdate,
+  }) : super(key: key);
 
   @override
-  _SickLeaveFormState createState() => _SickLeaveFormState();
+  _EditSickLeaveFormState createState() => _EditSickLeaveFormState();
 }
 
-class _SickLeaveFormState extends State<SickLeaveForm> {
+class _EditSickLeaveFormState extends State<EditSickLeaveForm> {
   final _formKey = GlobalKey<FormState>();
-  String _reason = '';
-  DateTime _todayDate = DateTime.now();
-  DateTime _startDate = DateTime.now();
-  DateTime _endDate = DateTime.now();
+  late String _reason;
+  late DateTime _todayDate;
+  late DateTime _startDate;
+  late DateTime _endDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _reason = widget.sickLeave.reason;
+    _todayDate = widget.sickLeave.todayDate;
+    _startDate = widget.sickLeave.startDate;
+    _endDate = widget.sickLeave.endDate;
+  }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Create Sick Leave'),
+      title: Text('Edit Sick Leave'),
       content: Form(
         key: _formKey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextFormField(
+              initialValue: _reason,
               decoration: InputDecoration(labelText: 'Reason'),
               validator: (value) => value!.isEmpty ? 'Please enter a reason' : null,
               onSaved: (value) => _reason = value!,
@@ -99,7 +114,7 @@ class _SickLeaveFormState extends State<SickLeaveForm> {
         ),
         ElevatedButton(
           onPressed: _submitForm,
-          child: Text('Create'),
+          child: Text('Update'),
         ),
       ],
     );
@@ -114,7 +129,9 @@ class _SickLeaveFormState extends State<SickLeaveForm> {
         'startDate': _startDate.toIso8601String(),
         'endDate': _endDate.toIso8601String(),
       };
-      await Provider.of<AppointmentProvider>(context, listen: false).createSickLeave(widget.appointmentId, sickLeaveData);
+      final updatedSickLeave = await Provider.of<AppointmentProvider>(context, listen: false)
+          .updateSickLeave(widget.appointmentId, widget.sickLeave.id, sickLeaveData);
+      widget.onUpdate(updatedSickLeave);
       Navigator.pop(context);
     }
   }

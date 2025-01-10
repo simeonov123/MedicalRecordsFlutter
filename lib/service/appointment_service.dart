@@ -1,6 +1,7 @@
 // lib/service/appointment_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:medical_records_frontend/domain/sick_leave.dart';
 import '../domain/appointment.dart';
 import 'api_service.dart';
 
@@ -54,10 +55,12 @@ class AppointmentService {
   }
 
   // Update existing sick leave
-  Future<void> updateSickLeave(int appointmentId, int sickLeaveId, Map<String, dynamic> sickLeaveData) async {
+  Future<SickLeave> updateSickLeave(int appointmentId, int sickLeaveId, Map<String, dynamic> sickLeaveData) async {
     final response = await _apiService.put('/appointments/$appointmentId/sick-leave/$sickLeaveId', body: sickLeaveData);
     if (response.statusCode != 200) {
       throw Exception('Failed to update sick leave');
+    }else{
+      return SickLeave.fromJson(json.decode(response.body));
     }
   }
 

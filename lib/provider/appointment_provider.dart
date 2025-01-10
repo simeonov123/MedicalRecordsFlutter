@@ -1,6 +1,7 @@
 // lib/provider/appointment_provider.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:medical_records_frontend/domain/sick_leave.dart';
 import '../domain/appointment.dart';
 import '../service/appointment_service.dart';
 
@@ -62,9 +63,41 @@ class AppointmentProvider with ChangeNotifier {
     await fetchAppointmentsForUser();
   }
 
-  Future<void> updateSickLeave(int appointmentId, int sickLeaveId, Map<String, dynamic> sickLeaveData) async {
-    await _appointmentService.updateSickLeave(appointmentId, sickLeaveId, sickLeaveData);
-    await fetchAppointmentsForUser();
+  Future<SickLeave> updateSickLeave(int appointmentId, int sickLeaveId, Map<String, dynamic> sickLeaveData) async {
+    try {
+      SickLeave updatedFetchedSickLeave = await _appointmentService.updateSickLeave(appointmentId, sickLeaveId, sickLeaveData);
+
+      // Find the matching appointment
+      final appointment = appointments.firstWhere((a) => a.id == appointmentId);
+
+      // Find the index of the sick leave to be updated
+      final sickLeaveIndex = appointment.sickLeaves.indexWhere((s) => s.id == sickLeaveId);
+
+      if (sickLeaveIndex != -1) {
+        // Replace the old sick leave with the updated one
+        appointment.sickLeaves[sickLeaveIndex] = updatedFetchedSickLeave;
+      } else {
+
+        return updatedFetchedSickLeave;
+      }
+
+      // Notify listeners to update the UI
+      notifyListeners();
+
+      return updatedFetchedSickLeave;
+    } catch (e) {
+      // Handle any errors that occur
+
+      return SickLeave(
+        id: -1,
+        reason: '',
+        todayDate: DateTime.now(),
+        startDate: DateTime.now(),
+        endDate: DateTime.now(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    }
   }
 
   Future<void> createDiagnosis(int appointmentId, Map<String, dynamic> diagnosisData) async {
