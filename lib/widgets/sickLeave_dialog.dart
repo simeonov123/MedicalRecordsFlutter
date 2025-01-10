@@ -34,6 +34,15 @@ class _SickLeaveDialogState extends State<SickLeaveDialog> {
     });
   }
 
+  void _onDeleteSickLeave(int sickLeaveId) {
+    setState(() {
+      int index = _sickLeaves.indexWhere((sickLeave) => sickLeave.id == sickLeaveId);
+      if (index != -1) {
+        _sickLeaves.removeAt(index);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -54,18 +63,42 @@ class _SickLeaveDialogState extends State<SickLeaveDialog> {
               ),
               trailing: RoleBasedWidget(
                 allowedRoles: ['admin', 'doctor'],
-                child: ElevatedButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => EditSickLeaveForm(
-                        appointmentId: widget.appointmentId,
-                        sickLeave: sickLeave,
-                        onUpdate: _updateSickLeave,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => EditSickLeaveForm(
+                            appointmentId: widget.appointmentId,
+                            sickLeave: sickLeave,
+                            onUpdate: _updateSickLeave,
+                          ),
+                        );
+                      },
+                      child: const Text('Edit'),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () async {
+                        bool success = await Provider.of<AppointmentProvider>(context, listen: false)
+                            .deleteSickLeave(widget.appointmentId, sickLeave.id);
+                        if (success) {
+                          _onDeleteSickLeave(sickLeave.id);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Failed to delete sick leave')),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        textStyle: const TextStyle(color: Colors.white),
                       ),
-                    );
-                  },
-                  child: const Text('Edit'),
+                      child: const Text('Delete'),
+                    ),
+                  ],
                 ),
               ),
             );

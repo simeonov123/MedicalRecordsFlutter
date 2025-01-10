@@ -1,6 +1,7 @@
 // lib/service/appointment_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:medical_records_frontend/domain/diagnosis.dart';
 import 'package:medical_records_frontend/domain/sick_leave.dart';
 import '../domain/appointment.dart';
 import 'api_service.dart';
@@ -64,6 +65,12 @@ class AppointmentService {
     }
   }
 
+  // Delete sick leave
+  Future<bool> deleteSickLeave(int appointmentId, int sickLeaveId) async {
+    final response = await _apiService.delete('/appointments/$appointmentId/sick-leave/$sickLeaveId');
+    return response.statusCode == 204;
+  }
+
   // Create new diagnosis
   Future<void> createDiagnosis(int appointmentId, Map<String, dynamic> diagnosisData) async {
     final response = await _apiService.post('/appointments/$appointmentId/diagnosis', body: diagnosisData);
@@ -73,10 +80,16 @@ class AppointmentService {
   }
 
   // Update existing diagnosis
-  Future<void> updateDiagnosis(int appointmentId, int diagnosisId, Map<String, dynamic> diagnosisData) async {
+  Future<Diagnosis> updateDiagnosis(int appointmentId, int diagnosisId, Map<String, dynamic> diagnosisData) async {
     final response = await _apiService.put('/appointments/$appointmentId/diagnosis/$diagnosisId', body: diagnosisData);
     if (response.statusCode != 200) {
       throw Exception('Failed to update diagnosis');
+    }else{
+      return Diagnosis.fromJson(json.decode(response.body));
     }
   }
-}
+
+  Future<bool> deleteDiagnosis(int appointmentId, int diagnosisId) async {
+    final response = await _apiService.delete('/appointments/$appointmentId/diagnosis/$diagnosisId');
+    return response.statusCode == 204;
+  }}

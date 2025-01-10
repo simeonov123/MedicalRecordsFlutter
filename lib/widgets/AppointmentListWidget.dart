@@ -173,7 +173,7 @@ class AppointmentListWidget extends StatelessWidget {
                                   showDialog(
                                     context: context,
                                     builder: (_) =>
-                                        DiagnosisDialog(diagnoses: appointment.diagnoses),
+                                        DiagnosisDialog(diagnoses: appointment.diagnoses, appointmentId: appointment.id),
                                   );
                                 },
                                 child: const Text('View Diagnosis Details',
