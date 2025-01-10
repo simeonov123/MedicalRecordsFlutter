@@ -203,4 +203,19 @@ class AppointmentProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+
+  // Delete appointment
+  Future<bool> deleteAppointment(int appointmentId) async {
+    try {
+      bool success = await _appointmentService.deleteAppointment(appointmentId);
+      if (success) {
+        _appointments.removeWhere((appointment) => appointment.id == appointmentId);
+        notifyListeners();
+      }
+      return success;
+    } catch (e) {
+      return false;
+    }
+  }
 }

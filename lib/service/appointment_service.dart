@@ -108,4 +108,11 @@ class AppointmentService {
       throw Exception('Failed to update appointment');
     }
   }
+
+
+  // Delete appointment
+  Future<bool> deleteAppointment(int appointmentId) async {
+    final response = await _apiService.delete('/appointments/$appointmentId');
+    return response.statusCode == 204;
+  }
 }

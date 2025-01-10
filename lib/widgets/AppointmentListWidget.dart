@@ -185,19 +185,43 @@ class AppointmentListWidget extends StatelessWidget {
                       const SizedBox(height: 16),
                       RoleBasedWidget(
                         allowedRoles: ['admin', 'doctor'],
-                        child: ElevatedButton(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (_) => EditAppointmentForm(
-                                appointment: appointment,
-                                onUpdate: (updatedAppointment) {
-                                  appointmentProvider.updateLocalAppointment(updatedAppointment);
-                                },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => EditAppointmentForm(
+                                    appointment: appointment,
+                                    onUpdate: (updatedAppointment) {
+                                      appointmentProvider.updateLocalAppointment(updatedAppointment);
+                                    },
+                                  ),
+                                );
+                              },
+                              child: const Text('Edit'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                bool success = await appointmentProvider.deleteAppointment(appointment.id);
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Appointment deleted successfully')),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Failed to delete appointment')),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
                               ),
-                            );
-                          },
-                          child: const Text('Edit'),
+                              child: const Text('Delete'),
+                            ),
+                          ],
                         ),
                       ),
                     ],
