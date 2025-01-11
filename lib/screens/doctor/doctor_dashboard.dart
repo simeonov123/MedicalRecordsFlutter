@@ -5,6 +5,7 @@ import '../../../provider/appointment_provider.dart';
 import '../../domain/doctor.dart';
 import '../../provider/doctor_provider.dart';
 import '../../widgets/AppointmentListWidget.dart';
+import '../../main.dart'; // Import the routeObserver
 
 class DoctorDashboard extends StatefulWidget {
   const DoctorDashboard({Key? key}) : super(key: key);
@@ -13,12 +14,39 @@ class DoctorDashboard extends StatefulWidget {
   State<DoctorDashboard> createState() => _DoctorDashboardState();
 }
 
-class _DoctorDashboardState extends State<DoctorDashboard> {
+class _DoctorDashboardState extends State<DoctorDashboard> with RouteAware {
   late Future<void> _fetchDataFuture;
 
   @override
   void initState() {
     super.initState();
+    _fetchDataFuture = _fetchData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPush() {
+    // Called when the current route has been pushed.
+    _fetchDataFuture = _fetchData();
+  }
+
+  @override
+  void didPopNext() {
+    // Called when a new route has been popped off, and the current route shows up.
     _fetchDataFuture = _fetchData();
   }
 
@@ -29,11 +57,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
 
     final keycloakUserId = authProvider.getUserId();
     if (keycloakUserId != null) {
-      // Fetch the current doctor and all doctors
       await doctorProvider.fetchCurrentDoctor();
       await doctorProvider.fetchDoctors();
-
-      // Fetch appointments for the current doctor
       if (doctorProvider.currentDoctor != null) {
         await appointmentProvider.fetchAppointmentsForUser();
       }
@@ -67,7 +92,6 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
           } else {
             return Column(
               children: [
-                // Role-based buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [

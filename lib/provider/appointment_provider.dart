@@ -1,6 +1,8 @@
 // lib/provider/appointment_provider.dart
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:medical_records_frontend/domain/sick_leave.dart';
 import '../domain/appointment.dart';
 import '../domain/diagnosis.dart';
@@ -24,7 +26,8 @@ class AppointmentProvider with ChangeNotifier {
   // Fetch appointments for the currently logged-in patient
   Future<List<Appointment>> fetchAppointmentsForUser() async {
     _isLoading = true;
-    notifyListeners();
+    debugPrint('fetchAppointmentsForUser: _isLoading set to true');
+    notifyListenersSafely();
 
     try {
       _appointments = await _appointmentService.fetchAppointmentsForUser();
@@ -33,7 +36,9 @@ class AppointmentProvider with ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
-      notifyListeners();
+      // Defer state update until after the current frame
+      notifyListenersSafely();
+
     }
 
     return _appointments;
@@ -53,11 +58,11 @@ class AppointmentProvider with ChangeNotifier {
       );
       // Optionally add to local list
       _appointments.add(apt);
-      notifyListeners();
+      notifyListenersSafely();
       return true;
     } catch (e) {
       _error = e.toString();
-      notifyListeners();
+      notifyListenersSafely();
       return false;
     }
   }
@@ -115,7 +120,7 @@ class AppointmentProvider with ChangeNotifier {
       }
 
       // Notify listeners to update the UI
-      notifyListeners();
+      notifyListenersSafely();
 
       return updatedFetchedSickLeave;
     } catch (e) {
@@ -143,7 +148,7 @@ class AppointmentProvider with ChangeNotifier {
       if (appointmentIndex != -1) {
         _appointments[appointmentIndex].sickLeaves.removeWhere((
             sickLeave) => sickLeave.id == sickLeaveId);
-        notifyListeners();
+        notifyListenersSafely();
       }
     }
     return success;
@@ -177,7 +182,7 @@ class AppointmentProvider with ChangeNotifier {
       }
 
       // Notify listeners to update the UI
-      notifyListeners();
+      notifyListenersSafely();
 
       return updatedFetchedDiagnosis;
     } catch (e) {
@@ -202,7 +207,7 @@ class AppointmentProvider with ChangeNotifier {
       if (appointmentIndex != -1) {
         _appointments[appointmentIndex].diagnoses.removeWhere((
             diagnosis) => diagnosis.id == diagnosisId);
-        notifyListeners();
+        notifyListenersSafely();
       }
     }
     return success;
@@ -217,7 +222,7 @@ class AppointmentProvider with ChangeNotifier {
     appointment.id == appointmentId);
     if (index != -1) {
       _appointments[index] = updatedAppointment;
-      notifyListeners();
+      notifyListenersSafely();
     }
     return updatedAppointment;
   }
@@ -227,7 +232,7 @@ class AppointmentProvider with ChangeNotifier {
     appointment.id == updatedAppointment.id);
     if (index != -1) {
       _appointments[index] = updatedAppointment;
-      notifyListeners();
+      notifyListenersSafely();
     }
   }
 
@@ -238,7 +243,7 @@ class AppointmentProvider with ChangeNotifier {
       bool success = await _appointmentService.deleteAppointment(appointmentId);
       if (success) {
         _appointments.removeWhere((appointment) => appointment.id == appointmentId);
-        notifyListeners();
+        notifyListenersSafely();
       }
       return success;
     } catch (e) {
@@ -250,7 +255,7 @@ class AppointmentProvider with ChangeNotifier {
   // Fetch all appointments for a specific patient
   Future<void> fetchAllAppointmentsForPatient(int patientId) async {
     _isLoading = true;
-    notifyListeners();
+    notifyListenersSafely();
 
     try {
       _appointments = await _appointmentService.fetchAllAppointmentsForPatient(patientId);
@@ -259,7 +264,15 @@ class AppointmentProvider with ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
-      notifyListeners();
+      notifyListenersSafely();
     }
   }
+
+
+  void notifyListenersSafely() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
 }

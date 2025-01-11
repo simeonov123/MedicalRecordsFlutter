@@ -1,13 +1,13 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
-import 'package:medical_records_frontend/provider/patient_provider.dart';
 import 'package:provider/provider.dart';
 import 'provider/auth_provider.dart';
 import 'provider/user_provider.dart';
 import 'provider/doctor_provider.dart';
-import 'provider/appointment_provider.dart'; // Import AppointmentProvider
+import 'provider/appointment_provider.dart';
+import 'provider/patient_provider.dart';
 import 'routes.dart';
+
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 void main() {
   runApp(
@@ -18,7 +18,6 @@ void main() {
         ChangeNotifierProvider(create: (_) => DoctorProvider()),
         ChangeNotifierProvider(create: (_) => AppointmentProvider()),
         ChangeNotifierProvider(create: (_) => PatientProvider()),
-
       ],
       child: const MyApp(),
     ),
@@ -37,6 +36,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: routes,
+      navigatorObservers: [routeObserver],
     );
   }
 }

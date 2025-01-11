@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import '../domain/patient.dart';
 import '../service/api_service.dart';
 
@@ -32,7 +33,7 @@ class PatientProvider with ChangeNotifier {
     } else {
       _error = 'Failed to load patient';
     }
-    notifyListeners();
+    notifyListenersSafely();
     return _patient;
   }
 
@@ -50,7 +51,7 @@ class PatientProvider with ChangeNotifier {
           primaryDoctorId: _patients[index].primaryDoctorId,
           keycloakUserId: _patients[index].keycloakUserId,
         );
-        notifyListeners();
+        notifyListenersSafely();
       }
       return true;
     }
@@ -59,7 +60,7 @@ class PatientProvider with ChangeNotifier {
 
   Future<void> fetchPatients() async {
     _isLoading = true;
-    notifyListeners();
+    notifyListenersSafely();
 
     try {
       final response = await _apiService.get('/patients');
@@ -74,9 +75,12 @@ class PatientProvider with ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
-      notifyListeners();
+      notifyListenersSafely();
     }
   }
 
-  getPatient() {}
-}
+  void notifyListenersSafely() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }}

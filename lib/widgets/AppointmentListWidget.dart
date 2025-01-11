@@ -24,6 +24,8 @@ class AppointmentListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLargeScreen = MediaQuery.of(context).size.width > 600;
     final appointmentProvider = Provider.of<AppointmentProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUserKeycloakId = authProvider.keycloakUserId;
 
     // Determine which method to call for fetching appointments
     final Future<void> fetchAppointmentsFuture = fromDoctorOrAdmin && patientId != null
@@ -56,6 +58,8 @@ class AppointmentListWidget extends StatelessWidget {
                 final updatedDate = appointment.updatedAt != null
                     ? DateFormat('yyyy-MM-dd – kk:mm').format(appointment.updatedAt!)
                     : 'N/A';
+
+                final isCurrentUserDoctor = currentUserKeycloakId == appointment.doctor.keycloakUserId;
 
                 return Padding(
                   padding: EdgeInsets.symmetric(
@@ -93,62 +97,74 @@ class AppointmentListWidget extends StatelessWidget {
                           Divider(color: Colors.grey.shade400),
                           const SizedBox(height: 16),
 
-                          Text(
-                            'Patient Information',
-                            style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueGrey,
+                          RoleBasedWidget(
+                            allowedRoles: ['admin', 'doctor'],
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Patient Information',
+                                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blueGrey,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text('Name: ${appointment.patient.name}'),
+                                Text('EGN: ${appointment.patient.egn}'),
+                                const SizedBox(height: 16),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Text('Name: ${appointment.patient.name}'),
-                          Text('EGN: ${appointment.patient.egn}'),
-                          const SizedBox(height: 16),
 
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (_) => SickLeaveForm(
-                                      appointmentId: appointment.id,
-                                      existingSickLeaves: appointment.sickLeaves,
+                          if (isCurrentUserDoctor)
+                            RoleBasedWidget(
+                              allowedRoles: ['admin', 'doctor'],
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10.0),
+                                      ),
                                     ),
-                                  );
-                                },
-                                child: const Text('Add Sick Leave',
-                                    style: TextStyle(color: Colors.white)),
-                              ),
-                              const SizedBox(width: 10),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (_) => SickLeaveForm(
+                                          appointmentId: appointment.id,
+                                          existingSickLeaves: appointment.sickLeaves,
+                                        ),
+                                      );
+                                    },
+                                    child: const Text('Add Sick Leave',
+                                        style: TextStyle(color: Colors.white)),
                                   ),
-                                ),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (_) => DiagnosisForm(
-                                      appointmentId: appointment.id,
-                                      existingDiagnoses: appointment.diagnoses,
+                                  const SizedBox(width: 10),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10.0),
+                                      ),
                                     ),
-                                  );
-                                },
-                                child: const Text('Add Diagnosis',
-                                    style: TextStyle(color: Colors.white)),
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (_) => DiagnosisForm(
+                                          appointmentId: appointment.id,
+                                          existingDiagnoses: appointment.diagnoses,
+                                        ),
+                                      );
+                                    },
+                                    child: const Text('Add Diagnosis',
+                                        style: TextStyle(color: Colors.white)),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
                           const SizedBox(height: 16),
 
                           Row(
@@ -202,47 +218,48 @@ class AppointmentListWidget extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          RoleBasedWidget(
-                            allowedRoles: ['admin', 'doctor'],
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (_) => EditAppointmentForm(
-                                        appointment: appointment,
-                                        onUpdate: (updatedAppointment) {
-                                          appointmentProvider.updateLocalAppointment(updatedAppointment);
-                                        },
-                                      ),
-                                    );
-                                  },
-                                  child: const Text('Edit'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    bool success = await appointmentProvider.deleteAppointment(appointment.id);
-                                    if (success) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Appointment deleted successfully')),
+                          if (isCurrentUserDoctor)
+                            RoleBasedWidget(
+                              allowedRoles: ['admin', 'doctor'],
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (_) => EditAppointmentForm(
+                                          appointment: appointment,
+                                          onUpdate: (updatedAppointment) {
+                                            appointmentProvider.updateLocalAppointment(updatedAppointment);
+                                          },
+                                        ),
                                       );
-                                    } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Failed to delete appointment')),
-                                      );
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                    foregroundColor: Colors.white,
+                                    },
+                                    child: const Text('Edit'),
                                   ),
-                                  child: const Text('Delete'),
-                                ),
-                              ],
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      bool success = await appointmentProvider.deleteAppointment(appointment.id);
+                                      if (success) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Appointment deleted successfully')),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Failed to delete appointment')),
+                                        );
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    child: const Text('Delete'),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
