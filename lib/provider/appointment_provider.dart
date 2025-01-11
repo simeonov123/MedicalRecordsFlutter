@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:medical_records_frontend/domain/sick_leave.dart';
 import '../domain/appointment.dart';
 import '../domain/diagnosis.dart';
+import '../domain/doctor.dart';
+import '../domain/patient.dart';
 import '../service/appointment_service.dart';
 
 class AppointmentProvider with ChangeNotifier {
@@ -74,7 +76,32 @@ class AppointmentProvider with ChangeNotifier {
           .updateSickLeave(appointmentId, sickLeaveId, sickLeaveData);
 
       // Find the matching appointment
-      final appointment = appointments.firstWhere((a) => a.id == appointmentId);
+      final appointment = appointments.firstWhere(
+            (a) => a.id == appointmentId,
+        orElse: () => Appointment(
+          id: -1,
+          patient: Patient(
+            id: -1,
+            name: 'Unknown',
+            egn: 'N/A',
+            healthInsurancePaid: false,
+            primaryDoctorId: -1,
+            keycloakUserId: 'N/A',
+          ),
+          doctor: Doctor(
+            id: -1,
+            keycloakUserId: 'N/A',
+            name: 'Unknown',
+            specialties: 'N/A',
+            primaryCare: false,
+          ),
+          appointmentDateTime: DateTime.now(),
+          createdAt: DateTime.now(),
+          updatedAt: null,
+          sickLeaves: [],
+          diagnoses: [],
+        ),
+      );
 
       // Find the index of the sick leave to be updated
       final sickLeaveIndex = appointment.sickLeaves.indexWhere((s) =>
@@ -216,6 +243,23 @@ class AppointmentProvider with ChangeNotifier {
       return success;
     } catch (e) {
       return false;
+    }
+  }
+
+
+  // Fetch all appointments for a specific patient
+  Future<void> fetchAllAppointmentsForPatient(int patientId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _appointments = await _appointmentService.fetchAllAppointmentsForPatient(patientId);
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }

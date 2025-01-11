@@ -94,7 +94,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else {
-          return const AppointmentListWidget();
+          return const AppointmentListWidget(fromDoctorOrAdmin: false,);
         }
       },
     );
@@ -104,7 +104,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
     return Row(
       children: [
         _buildPatientDetails(patientProvider.patient),
-        const Expanded(child: AppointmentListWidget()),
+        const Expanded(child: AppointmentListWidget(fromDoctorOrAdmin: false,)),
       ],
     );
   }

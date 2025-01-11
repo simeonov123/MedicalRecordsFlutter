@@ -65,10 +65,38 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
-            return Row(
+            return Column(
               children: [
-                _buildDoctorDetails(doctorProvider.currentDoctor),
-                const Expanded(child: AppointmentListWidget()),
+                // Role-based buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/doctor/list');
+                      },
+                      child: const Text('View Doctors'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/patient/list');
+                      },
+                      child: const Text('View Patients'),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: Row(
+                    children: [
+                      _buildDoctorDetails(doctorProvider.currentDoctor),
+                      Expanded(
+                        child: AppointmentListWidget(
+                          fromDoctorOrAdmin: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             );
           }

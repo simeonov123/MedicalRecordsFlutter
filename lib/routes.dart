@@ -2,6 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:medical_records_frontend/screens/doctor/doctor_dashboard.dart';
+import 'package:medical_records_frontend/screens/doctor/doctor_list_screen.dart';
+import 'package:medical_records_frontend/screens/patient/patient_list_screen.dart';
+import 'package:medical_records_frontend/widgets/AppointmentListWidget.dart';
 import 'package:provider/provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';
@@ -24,6 +27,22 @@ final Map<String, WidgetBuilder> routes = {
     allowedRoles: ['admin', 'doctor', 'patient'],
     child: PatientDashboard(),
   ),
+  '/doctor/list': (context) => const RoleGuard(
+    allowedRoles: ['admin', 'doctor'],
+    child: DoctorListScreen(),
+  ),
+  '/patient/list': (context) => const RoleGuard(
+    allowedRoles: ['admin', 'doctor'],
+    child: PatientListScreen(),
+  ),
+  '/patient/appointments': (context) {
+    final patientId = ModalRoute.of(context)?.settings.arguments as int?;
+    return RoleGuard(
+      allowedRoles: ['admin', 'doctor'],
+      child: AppointmentListWidget(fromDoctorOrAdmin: true, patientId: patientId),
+    );
+  },
+
 };
 
 class RoleGuard extends StatelessWidget {

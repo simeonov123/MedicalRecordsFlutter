@@ -115,4 +115,16 @@ class AppointmentService {
     final response = await _apiService.delete('/appointments/$appointmentId');
     return response.statusCode == 204;
   }
+
+
+  // Fetch all appointments for a specific patient
+  Future<List<Appointment>> fetchAllAppointmentsForPatient(int patientId) async {
+    final response = await _apiService.get('/appointments/$patientId/appointments');
+    if (response.statusCode == 200) {
+      List<dynamic> listJson = json.decode(response.body);
+      return listJson.map((j) => Appointment.fromJson(j)).toList();
+    } else {
+      throw Exception('Failed to fetch appointments for patient');
+    }
+  }
 }
