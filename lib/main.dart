@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medical_records_frontend/provider/medication_provider.dart';
 import 'package:provider/provider.dart';
 import 'provider/auth_provider.dart';
 import 'provider/user_provider.dart';
@@ -18,6 +19,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => DoctorProvider()),
         ChangeNotifierProvider(create: (_) => AppointmentProvider()),
         ChangeNotifierProvider(create: (_) => PatientProvider()),
+        ChangeNotifierProvider(create: (_) => MedicationProvider()),
+
       ],
       child: const MyApp(),
     ),

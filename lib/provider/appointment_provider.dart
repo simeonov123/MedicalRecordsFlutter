@@ -269,10 +269,31 @@ class AppointmentProvider with ChangeNotifier {
   }
 
 
+  Future<void> createTreatment(int appointmentId, int diagnosisId, Map<String, dynamic> treatmentData) async {
+    await _appointmentService.createTreatment(appointmentId, diagnosisId, treatmentData);
+    await fetchAppointmentsForUser();
+  }
+
+
+
   void notifyListenersSafely() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });
   }
 
+  Future<void> createPrescription(int appointmentId, int treatmentId, Map<String, dynamic> prescriptionData) async {
+    await _appointmentService.createPrescription(appointmentId, treatmentId, prescriptionData);
+    await fetchAppointmentsForUser();
+  }
+
+  Future<void> updatePrescription(int appointmentId, int treatmentId, int prescriptionId, Map<String, dynamic> prescriptionData) async {
+    await _appointmentService.updatePrescription(appointmentId, treatmentId, prescriptionId, prescriptionData);
+    await fetchAppointmentsForUser();
+  }
+
+  Future<void> deletePrescription(int appointmentId, int treatmentId, int prescriptionId) async {
+    await _appointmentService.deletePrescription(appointmentId, treatmentId, prescriptionId);
+    await fetchAppointmentsForUser();
+  }
 }

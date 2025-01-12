@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:medical_records_frontend/widgets/treatment_form.dart';
 import 'package:provider/provider.dart';
 import '../domain/diagnosis.dart';
 import '../provider/appointment_provider.dart';
@@ -26,6 +27,7 @@ class DiagnosisDialog extends StatefulWidget {
 
 class _DiagnosisDialogState extends State<DiagnosisDialog> {
   List<Diagnosis> _diagnoses = [];
+
 
   @override
   void initState() {
@@ -80,6 +82,16 @@ class _DiagnosisDialogState extends State<DiagnosisDialog> {
                         onPressed: () {
                           showDialog(
                             context: context,
+                            builder: (_) => TreatmentForm(diagnosisId: diagnosis.id, appointmentId: widget.appointmentId),
+                          );
+                        },
+                        child: const Text('Add Treatment'),
+                      ),
+                    if (authProvider.roles.contains('admin') || currentUserKeycloakId == widget.doctorKeycloakUserId)
+                      ElevatedButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
                             builder: (_) => EditDiagnosisForm(
                               appointmentId: widget.appointmentId,
                               diagnosis: diagnosis,
@@ -116,7 +128,7 @@ class _DiagnosisDialogState extends State<DiagnosisDialog> {
                   ? () {
                 showDialog(
                   context: context,
-                  builder: (_) => TreatmentDialog(treatments: diagnosis.treatments),
+                  builder: (_) => TreatmentDialog(treatments: diagnosis.treatments, appointmentId: widget.appointmentId, doctorKeycloakUserId: widget.doctorKeycloakUserId),
                 );
               }
                   : null,

@@ -127,4 +127,33 @@ class AppointmentService {
       throw Exception('Failed to fetch appointments for patient');
     }
   }
+
+  Future<void> createTreatment(int appointmentId, int diagnosisId, Map<String, dynamic> treatmentData) async {
+    final response = await _apiService.post('/appointments/$appointmentId/diagnosis/$diagnosisId/treatment', body: treatmentData);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to create treatment');
+    }
+  }
+
+
+  Future<void> createPrescription(int appointmentId, int treatmentId, Map<String, dynamic> prescriptionData) async {
+    final response = await _apiService.post('/appointments/$appointmentId/treatments/$treatmentId/prescriptions', body: prescriptionData);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to create prescription');
+    }
+  }
+
+  Future<void> updatePrescription(int appointmentId, int treatmentId, int prescriptionId, Map<String, dynamic> prescriptionData) async {
+    final response = await _apiService.put('/appointments/$appointmentId/treatments/$treatmentId/prescriptions/$prescriptionId', body: prescriptionData);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update prescription');
+    }
+  }
+
+  Future<void> deletePrescription(int appointmentId, int treatmentId, int prescriptionId) async {
+    final response = await _apiService.delete('/appointments/$appointmentId/treatments/$treatmentId/prescriptions/$prescriptionId');
+    if (response.statusCode != 204) {
+      throw Exception('Failed to delete prescription');
+    }
+  }
 }
