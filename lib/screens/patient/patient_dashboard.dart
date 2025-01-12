@@ -155,9 +155,16 @@ class _PatientDashboardState extends State<PatientDashboard> {
       context: context,
       builder: (context) {
         return Dialog(
-          child: CreateAppointmentWidget(doctors: doctors, patientId: patientId),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 450, maxHeight: 400),
+            child: CreateAppointmentWidget(doctors: doctors, patientId: patientId),
+          ),
         );
       },
     );
   }
+
 }

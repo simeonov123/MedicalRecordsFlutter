@@ -3,14 +3,21 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../domain/sick_leave.dart';
 import '../provider/appointment_provider.dart';
+import '../provider/auth_provider.dart';
 import 'edit_sick_leave_form.dart';
 import 'role_based_widget.dart';
 
 class SickLeaveDialog extends StatefulWidget {
   final List<SickLeave> sickLeaves;
   final int appointmentId;
+  final String doctorKeycloakUserId;
 
-  const SickLeaveDialog({Key? key, required this.sickLeaves, required this.appointmentId}) : super(key: key);
+  const SickLeaveDialog({
+    Key? key,
+    required this.sickLeaves,
+    required this.appointmentId,
+    required this.doctorKeycloakUserId,
+  }) : super(key: key);
 
   @override
   _SickLeaveDialogState createState() => _SickLeaveDialogState();
@@ -45,6 +52,9 @@ class _SickLeaveDialogState extends State<SickLeaveDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUserKeycloakId = authProvider.keycloakUserId;
+
     return AlertDialog(
       title: const Text('Sick Leave Details'),
       content: SizedBox(
@@ -66,38 +76,40 @@ class _SickLeaveDialogState extends State<SickLeaveDialog> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => EditSickLeaveForm(
-                            appointmentId: widget.appointmentId,
-                            sickLeave: sickLeave,
-                            onUpdate: _updateSickLeave,
-                          ),
-                        );
-                      },
-                      child: const Text('Edit'),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () async {
-                        bool success = await Provider.of<AppointmentProvider>(context, listen: false)
-                            .deleteSickLeave(widget.appointmentId, sickLeave.id);
-                        if (success) {
-                          _onDeleteSickLeave(sickLeave.id);
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Failed to delete sick leave')),
+                    if (authProvider.roles.contains('admin') || currentUserKeycloakId == widget.doctorKeycloakUserId)
+                      ElevatedButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => EditSickLeaveForm(
+                              appointmentId: widget.appointmentId,
+                              sickLeave: sickLeave,
+                              onUpdate: _updateSickLeave,
+                            ),
                           );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
+                        },
+                        child: const Text('Edit'),
                       ),
-                      child: const Text('Delete'),
-                    ),
+                    const SizedBox(width: 8),
+                    if (authProvider.roles.contains('admin') || currentUserKeycloakId == widget.doctorKeycloakUserId)
+                      ElevatedButton(
+                        onPressed: () async {
+                          bool success = await Provider.of<AppointmentProvider>(context, listen: false)
+                              .deleteSickLeave(widget.appointmentId, sickLeave.id);
+                          if (success) {
+                            _onDeleteSickLeave(sickLeave.id);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Failed to delete sick leave')),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Delete'),
+                      ),
                   ],
                 ),
               ),

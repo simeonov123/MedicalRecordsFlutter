@@ -62,7 +62,7 @@ class AppointmentListWidget extends StatelessWidget {
 
                     return Center(
                       child: Container(
-                        width: isLargeScreen ? 450 : double.infinity,
+                        width: isLargeScreen ? 850 : double.infinity,
                         padding: EdgeInsets.symmetric(
                           vertical: 8.0,
                           horizontal: isLargeScreen ? 0 : 16.0,
@@ -185,7 +185,7 @@ class AppointmentListWidget extends StatelessWidget {
                                               context: context,
                                               builder: (_) => SickLeaveDialog(
                                                 sickLeaves: appointment.sickLeaves,
-                                                appointmentId: appointment.id,
+                                                appointmentId: appointment.id, doctorKeycloakUserId: appointment.doctor.keycloakUserId,
                                               ),
                                             );
                                           },
@@ -208,7 +208,7 @@ class AppointmentListWidget extends StatelessWidget {
                                               context: context,
                                               builder: (_) => DiagnosisDialog(
                                                 diagnoses: appointment.diagnoses,
-                                                appointmentId: appointment.id,
+                                                appointmentId: appointment.id, doctorKeycloakUserId: appointment.doctor.keycloakUserId,
                                               ),
                                             );
                                           },
