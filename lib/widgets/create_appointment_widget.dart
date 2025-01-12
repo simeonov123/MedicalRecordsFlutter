@@ -31,19 +31,19 @@ class _CreateAppointmentWidgetState extends State<CreateAppointmentWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: 'Select Doctor'),
-                items: widget.doctors
-                    .map((doctor) => DropdownMenuItem<int>(
-                  value: doctor.id, // Use the doctor's id as the value
-                  child: Text(doctor.name), // Display the doctor's name
-                ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedDoctorId = value; // Assign the selected doctor's id
-                  });
-                },
-                validator: (value) => value == null ? 'Please select a doctor' : null
+              decoration: const InputDecoration(labelText: 'Select Doctor'),
+              items: widget.doctors
+                  .map((doctor) => DropdownMenuItem<int>(
+                value: doctor.id, // Use the doctor's id as the value
+                child: Text(doctor.name), // Display the doctor's name
+              ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedDoctorId = value; // Assign the selected doctor's id
+                });
+              },
+              validator: (value) => value == null ? 'Please select a doctor' : null,
             ),
             TextFormField(
               decoration: const InputDecoration(labelText: 'Select Date'),

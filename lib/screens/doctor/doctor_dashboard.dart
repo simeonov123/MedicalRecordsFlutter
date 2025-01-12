@@ -5,7 +5,8 @@ import '../../../provider/appointment_provider.dart';
 import '../../domain/doctor.dart';
 import '../../provider/doctor_provider.dart';
 import '../../widgets/AppointmentListWidget.dart';
-import '../../main.dart'; // Import the routeObserver
+import '../../main.dart';
+import '../../widgets/role_based_widget.dart';
 
 class DoctorDashboard extends StatefulWidget {
   const DoctorDashboard({Key? key}) : super(key: key);
@@ -90,32 +91,51 @@ class _DoctorDashboardState extends State<DoctorDashboard> with RouteAware {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
-            return Column(
+            return Stack(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                Column(
                   children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/doctor/list');
-                      },
-                      child: const Text('View Doctors'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/patient/list');
-                      },
-                      child: const Text('View Patients'),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _buildDoctorDetails(doctorProvider.currentDoctor),
+                          Expanded(
+                            child: AppointmentListWidget(
+                              fromDoctorOrAdmin: true,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                Expanded(
-                  child: Row(
+                Positioned(
+                  bottom: 16,
+                  right: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      _buildDoctorDetails(doctorProvider.currentDoctor),
-                      Expanded(
-                        child: AppointmentListWidget(
-                          fromDoctorOrAdmin: true,
+                      RoleBasedWidget(
+                        allowedRoles: ['admin', 'doctor'],
+                        child: FloatingActionButton(
+                          heroTag: 'viewDoctors',
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/doctor/list');
+                          },
+                          tooltip: 'View Doctors',
+                          child: const Icon(Icons.person),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      RoleBasedWidget(
+                        allowedRoles: ['admin', 'doctor'],
+                        child: FloatingActionButton(
+                          heroTag: 'viewPatients',
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/patient/list');
+                          },
+                          tooltip: 'View Patients',
+                          child: const Icon(Icons.people),
                         ),
                       ),
                     ],
