@@ -6,13 +6,19 @@ import '../provider/appointment_provider.dart';
 import '../provider/auth_provider.dart';
 import 'prescription_dialog.dart';
 import 'prescription_form.dart';
+import 'edit_treatment_form.dart';
 
 class TreatmentDialog extends StatelessWidget {
   final List<Treatment> treatments;
   final int appointmentId;
   final String doctorKeycloakUserId;
 
-  const TreatmentDialog({Key? key, required this.treatments, required this.appointmentId, required this.doctorKeycloakUserId}) : super(key: key);
+  const TreatmentDialog({
+    Key? key,
+    required this.treatments,
+    required this.appointmentId,
+    required this.doctorKeycloakUserId,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -65,17 +71,6 @@ class TreatmentDialog extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                if (treatment.prescriptions.isNotEmpty)
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (_) => PrescriptionDialog(prescriptions: treatment.prescriptions),
-                                      );
-                                    },
-                                    child: const Text('View Prescriptions'),
-                                  ),
-                                const SizedBox(width: 8),
                                 if (authProvider.roles.contains('doctor') &&
                                     authProvider.keycloakUserId == doctorKeycloakUserId)
                                   ElevatedButton(
@@ -90,8 +85,66 @@ class TreatmentDialog extends StatelessWidget {
                                     },
                                     child: const Text('Add Prescription'),
                                   ),
+                                const SizedBox(width: 8),
+                                if (authProvider.roles.contains('doctor') &&
+                                    authProvider.keycloakUserId == doctorKeycloakUserId)
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (_) => EditTreatmentForm(
+                                          appointmentId: appointmentId,
+                                          treatment: treatment,
+                                          onUpdate: (updatedTreatment) {
+                                            treatments[index] = updatedTreatment;
+                                          },
+                                        ),
+                                      );
+                                    },
+                                    child: const Text('Edit Treatment'),
+                                  ),
+                                const SizedBox(width: 8),
+                                if (authProvider.roles.contains('doctor') &&
+                                    authProvider.keycloakUserId == doctorKeycloakUserId)
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      bool success = await Provider.of<AppointmentProvider>(context, listen: false)
+                                          .deleteTreatment(appointmentId, treatment.id);
+                                      if (success) {
+                                        treatments.removeAt(index);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Treatment deleted successfully')),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Failed to delete treatment')),
+                                        );
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    child: const Text('Delete Treatment'),
+                                  ),
                               ],
                             ),
+                            const SizedBox(height: 12),
+                            if (treatment.prescriptions.isNotEmpty)
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: TextButton(
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => PrescriptionDialog(
+                                        prescriptions: treatment.prescriptions,
+                                      ),
+                                    );
+                                  },
+                                  child: const Text('View Prescriptions'),
+                                ),
+                              ),
                           ],
                         ),
                       ),

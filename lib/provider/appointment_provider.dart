@@ -8,6 +8,8 @@ import '../domain/appointment.dart';
 import '../domain/diagnosis.dart';
 import '../domain/doctor.dart';
 import '../domain/patient.dart';
+import '../domain/prescription.dart';
+import '../domain/treatment.dart';
 import '../service/appointment_service.dart';
 
 class AppointmentProvider with ChangeNotifier {
@@ -296,4 +298,33 @@ class AppointmentProvider with ChangeNotifier {
     await _appointmentService.deletePrescription(appointmentId, treatmentId, prescriptionId);
     await fetchAppointmentsForUser();
   }
+
+
+  Future<bool> deleteTreatment(int appointmentId, int treatmentId) async {
+    try {
+      bool success = await _appointmentService.deleteTreatment(appointmentId, treatmentId);
+      if (success) {
+        notifyListenersSafely();
+      }
+      return success;
+    } catch (e) {
+      return false;
+    }
+  }
+
+
+  Future<Treatment> updateTreatment(int appointmentId, int treatmentId, Map<String, dynamic> treatmentData) async {
+    try {
+      final updatedTreatment = await _appointmentService.updateTreatment(appointmentId, treatmentId, treatmentData);
+      // Update the local state if necessary
+      notifyListenersSafely();
+      return updatedTreatment;
+    } catch (e) {
+      throw Exception('Failed to update treatment: $e');
+    }
+  }
+
+
+
+
 }

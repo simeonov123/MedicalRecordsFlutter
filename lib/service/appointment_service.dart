@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:medical_records_frontend/domain/diagnosis.dart';
 import 'package:medical_records_frontend/domain/sick_leave.dart';
 import '../domain/appointment.dart';
+import '../domain/treatment.dart';
 import 'api_service.dart';
 
 class AppointmentService {
@@ -156,4 +157,22 @@ class AppointmentService {
       throw Exception('Failed to delete prescription');
     }
   }
+
+
+  Future<bool> deleteTreatment(int appointmentId, int treatmentId) async {
+    final response = await _apiService.delete('/appointments/$appointmentId/treatments/$treatmentId');
+    return response.statusCode == 204;
+  }
+
+  Future<Treatment> updateTreatment(int appointmentId, int treatmentId, Map<String, dynamic> treatmentData) async {
+    final response = await _apiService.put('/appointments/$appointmentId/treatments/$treatmentId', body: treatmentData);
+    if (response.statusCode == 200) {
+      return Treatment.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to update treatment');
+    }
+  }
+
+
+
 }
