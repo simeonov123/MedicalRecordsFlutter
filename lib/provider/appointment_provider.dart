@@ -273,6 +273,8 @@ class AppointmentProvider with ChangeNotifier {
 
   Future<void> createTreatment(int appointmentId, int diagnosisId, Map<String, dynamic> treatmentData) async {
     await _appointmentService.createTreatment(appointmentId, diagnosisId, treatmentData);
+    notifyListenersSafely();
+
     await fetchAppointmentsForUser();
   }
 
@@ -286,17 +288,30 @@ class AppointmentProvider with ChangeNotifier {
 
   Future<void> createPrescription(int appointmentId, int treatmentId, Map<String, dynamic> prescriptionData) async {
     await _appointmentService.createPrescription(appointmentId, treatmentId, prescriptionData);
+    notifyListenersSafely();
+
     await fetchAppointmentsForUser();
   }
 
-  Future<void> updatePrescription(int appointmentId, int treatmentId, int prescriptionId, Map<String, dynamic> prescriptionData) async {
-    await _appointmentService.updatePrescription(appointmentId, treatmentId, prescriptionId, prescriptionData);
+  Future<Prescription> updatePrescription(int appointmentId, int treatmentId, int prescriptionId, Map<String, dynamic> prescriptionData) async {
+    final updatedPrescription = await _appointmentService.updatePrescription(appointmentId, treatmentId, prescriptionId, prescriptionData);
     await fetchAppointmentsForUser();
+    notifyListenersSafely();
+
+    return updatedPrescription;
   }
 
-  Future<void> deletePrescription(int appointmentId, int treatmentId, int prescriptionId) async {
-    await _appointmentService.deletePrescription(appointmentId, treatmentId, prescriptionId);
-    await fetchAppointmentsForUser();
+  Future<bool> deletePrescription(int appointmentId, int treatmentId, int prescriptionId) async {
+    try {
+      final success = await _appointmentService.deletePrescription(appointmentId, treatmentId, prescriptionId);
+      if (success) {
+        // Update local state if necessary
+        notifyListenersSafely();
+      }
+      return success;
+    } catch (e) {
+      return false;
+    }
   }
 
 

@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:medical_records_frontend/domain/diagnosis.dart';
+import 'package:medical_records_frontend/domain/prescription.dart';
 import 'package:medical_records_frontend/domain/sick_leave.dart';
 import '../domain/appointment.dart';
 import '../domain/treatment.dart';
@@ -144,18 +145,18 @@ class AppointmentService {
     }
   }
 
-  Future<void> updatePrescription(int appointmentId, int treatmentId, int prescriptionId, Map<String, dynamic> prescriptionData) async {
+  Future<Prescription> updatePrescription(int appointmentId, int treatmentId, int prescriptionId, Map<String, dynamic> prescriptionData) async {
     final response = await _apiService.put('/appointments/$appointmentId/treatments/$treatmentId/prescriptions/$prescriptionId', body: prescriptionData);
-    if (response.statusCode != 200) {
-      throw Exception('Failed to update prescription');
+    if (response.statusCode == 200) {
+      return Prescription.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to update treatment');
     }
   }
 
-  Future<void> deletePrescription(int appointmentId, int treatmentId, int prescriptionId) async {
+  Future<bool> deletePrescription(int appointmentId, int treatmentId, int prescriptionId) async {
     final response = await _apiService.delete('/appointments/$appointmentId/treatments/$treatmentId/prescriptions/$prescriptionId');
-    if (response.statusCode != 204) {
-      throw Exception('Failed to delete prescription');
-    }
+    return response.statusCode != 204;
   }
 
 

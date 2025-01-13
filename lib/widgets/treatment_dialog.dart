@@ -138,7 +138,7 @@ class TreatmentDialog extends StatelessWidget {
                                     showDialog(
                                       context: context,
                                       builder: (_) => PrescriptionDialog(
-                                        prescriptions: treatment.prescriptions,
+                                        prescriptions: treatment.prescriptions, appointmentId: appointmentId, treatmentId: treatment.id, doctorKeycloakUserId: doctorKeycloakUserId,
                                       ),
                                     );
                                   },
