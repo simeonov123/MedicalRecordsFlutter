@@ -6,13 +6,14 @@ import '../provider/appointment_provider.dart';
 class EditTreatmentForm extends StatefulWidget {
   final int appointmentId;
   final Treatment treatment;
+  final int diagnosisId;
   final Function(Treatment) onUpdate;
 
   const EditTreatmentForm({
     Key? key,
     required this.appointmentId,
     required this.treatment,
-    required this.onUpdate,
+    required this.onUpdate, required this.diagnosisId,
   }) : super(key: key);
 
   @override
@@ -126,7 +127,7 @@ class _EditTreatmentFormState extends State<EditTreatmentForm> {
         'endDate': _endDate.toIso8601String(),
       };
       final updatedTreatment = await Provider.of<AppointmentProvider>(context, listen: false)
-          .updateTreatment(widget.appointmentId, widget.treatment.id, treatmentData);
+          .updateTreatment(widget.appointmentId, widget.diagnosisId, widget.treatment.id, treatmentData);
       widget.onUpdate(updatedTreatment);
       Navigator.pop(context);
     }

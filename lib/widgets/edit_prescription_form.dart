@@ -7,6 +7,7 @@ import '../domain/prescription.dart';
 
 class EditPrescriptionForm extends StatefulWidget {
   final int appointmentId;
+  final int diagnosisId;
   final int treatmentId;
   final Prescription prescription;
   final Function(Prescription) onUpdate;
@@ -16,7 +17,7 @@ class EditPrescriptionForm extends StatefulWidget {
     required this.appointmentId,
     required this.treatmentId,
     required this.prescription,
-    required this.onUpdate,
+    required this.onUpdate, required this.diagnosisId,
   }) : super(key: key);
 
   @override
@@ -126,6 +127,7 @@ class _EditPrescriptionFormState extends State<EditPrescriptionForm> {
         listen: false,
       ).updatePrescription(
         widget.appointmentId,
+        widget.diagnosisId,
         widget.treatmentId,
         widget.prescription.id,
         prescriptionData,

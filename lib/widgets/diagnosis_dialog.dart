@@ -168,7 +168,7 @@ class _DiagnosisDialogState extends State<DiagnosisDialog> {
                                       builder: (_) => TreatmentDialog(
                                         treatments: diagnosis.treatments,
                                         appointmentId: widget.appointmentId,
-                                        doctorKeycloakUserId: widget.doctorKeycloakUserId,
+                                        doctorKeycloakUserId: widget.doctorKeycloakUserId, diagnosisId: diagnosis.id,
                                       ),
                                     );
                                   },

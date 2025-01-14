@@ -10,6 +10,7 @@ import 'role_based_widget.dart';
 class PrescriptionDialog extends StatelessWidget {
   final List<Prescription> prescriptions;
   final int appointmentId;
+  final int diagnosisId;
   final int treatmentId;
   final String doctorKeycloakUserId;
 
@@ -18,7 +19,7 @@ class PrescriptionDialog extends StatelessWidget {
     required this.prescriptions,
     required this.appointmentId,
     required this.treatmentId,
-    required this.doctorKeycloakUserId,
+    required this.doctorKeycloakUserId, required this.diagnosisId,
   }) : super(key: key);
 
   @override
@@ -99,7 +100,7 @@ class PrescriptionDialog extends StatelessWidget {
                                           prescription: prescription,
                                           onUpdate: (updatedPrescription) {
                                             prescriptions[index] = updatedPrescription;
-                                          },
+                                          }, diagnosisId: diagnosisId,
                                         ),
                                       );
                                     },
@@ -112,7 +113,7 @@ class PrescriptionDialog extends StatelessWidget {
                                   ElevatedButton(
                                     onPressed: () async {
                                       bool success = await Provider.of<AppointmentProvider>(context, listen: false)
-                                          .deletePrescription(appointmentId, treatmentId, prescription.id);
+                                          .deletePrescription(appointmentId, diagnosisId,  treatmentId, prescription.id);
                                       if (success) {
                                         prescriptions.removeAt(index);
                                         ScaffoldMessenger.of(context).showSnackBar(

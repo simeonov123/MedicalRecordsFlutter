@@ -12,12 +12,13 @@ class TreatmentDialog extends StatelessWidget {
   final List<Treatment> treatments;
   final int appointmentId;
   final String doctorKeycloakUserId;
+  final int diagnosisId;
 
   const TreatmentDialog({
     Key? key,
     required this.treatments,
     required this.appointmentId,
-    required this.doctorKeycloakUserId,
+    required this.doctorKeycloakUserId, required this.diagnosisId,
   }) : super(key: key);
 
   @override
@@ -97,7 +98,7 @@ class TreatmentDialog extends StatelessWidget {
                                           treatment: treatment,
                                           onUpdate: (updatedTreatment) {
                                             treatments[index] = updatedTreatment;
-                                          },
+                                          }, diagnosisId: diagnosisId,
                                         ),
                                       );
                                     },
@@ -109,7 +110,7 @@ class TreatmentDialog extends StatelessWidget {
                                   ElevatedButton(
                                     onPressed: () async {
                                       bool success = await Provider.of<AppointmentProvider>(context, listen: false)
-                                          .deleteTreatment(appointmentId, treatment.id);
+                                          .deleteTreatment(appointmentId, diagnosisId, treatment.id);
                                       if (success) {
                                         treatments.removeAt(index);
                                         ScaffoldMessenger.of(context).showSnackBar(
@@ -138,7 +139,7 @@ class TreatmentDialog extends StatelessWidget {
                                     showDialog(
                                       context: context,
                                       builder: (_) => PrescriptionDialog(
-                                        prescriptions: treatment.prescriptions, appointmentId: appointmentId, treatmentId: treatment.id, doctorKeycloakUserId: doctorKeycloakUserId,
+                                        prescriptions: treatment.prescriptions, appointmentId: appointmentId, treatmentId: treatment.id, doctorKeycloakUserId: doctorKeycloakUserId, diagnosisId: diagnosisId,
                                       ),
                                     );
                                   },

@@ -130,18 +130,22 @@ class AppointmentService {
     }
   }
 
-  Future<void> createTreatment(int appointmentId, int diagnosisId, Map<String, dynamic> treatmentData) async {
+  Future<Treatment> createTreatment(int appointmentId, int diagnosisId, Map<String, dynamic> treatmentData) async {
     final response = await _apiService.post('/appointments/$appointmentId/diagnosis/$diagnosisId/treatment', body: treatmentData);
     if (response.statusCode != 200) {
       throw Exception('Failed to create treatment');
+    }else {
+      return Treatment.fromJson(json.decode(response.body));
     }
   }
 
 
-  Future<void> createPrescription(int appointmentId, int treatmentId, Map<String, dynamic> prescriptionData) async {
+  Future<Prescription> createPrescription(int appointmentId, int treatmentId, Map<String, dynamic> prescriptionData) async {
     final response = await _apiService.post('/appointments/$appointmentId/treatments/$treatmentId/prescriptions', body: prescriptionData);
     if (response.statusCode != 200) {
       throw Exception('Failed to create prescription');
+    }else{
+      return Prescription.fromJson(json.decode(response.body));
     }
   }
 
@@ -156,7 +160,7 @@ class AppointmentService {
 
   Future<bool> deletePrescription(int appointmentId, int treatmentId, int prescriptionId) async {
     final response = await _apiService.delete('/appointments/$appointmentId/treatments/$treatmentId/prescriptions/$prescriptionId');
-    return response.statusCode != 204;
+    return response.statusCode == 204;
   }
 
 
