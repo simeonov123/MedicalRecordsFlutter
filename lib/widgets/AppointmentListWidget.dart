@@ -1,3 +1,5 @@
+// lib/widgets/appointment_list_widget.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +12,7 @@ import 'diagnosis_dialog.dart';
 import 'edit_appointment_form.dart';
 import 'role_based_widget.dart';
 
-class AppointmentListWidget extends StatelessWidget {
+class AppointmentListWidget extends StatefulWidget {
   final bool fromDoctorOrAdmin;
   final int? patientId;
 
@@ -21,17 +23,35 @@ class AppointmentListWidget extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<AppointmentListWidget> createState() => _AppointmentListWidgetState();
+}
+
+class _AppointmentListWidgetState extends State<AppointmentListWidget> {
+  late Future<void> _fetchFuture;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Fetch appointments *once* during initState, rather than on every build.
+    final appointmentProvider =
+    Provider.of<AppointmentProvider>(context, listen: false);
+
+    if (widget.fromDoctorOrAdmin && widget.patientId != null) {
+      _fetchFuture =
+          appointmentProvider.fetchAllAppointmentsForPatient(widget.patientId!);
+    } else {
+      _fetchFuture = appointmentProvider.fetchAppointmentsForUser();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final appointmentProvider = Provider.of<AppointmentProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final currentUserKeycloakId = authProvider.keycloakUserId;
 
-    final Future<void> fetchAppointmentsFuture = fromDoctorOrAdmin && patientId != null
-        ? appointmentProvider.fetchAllAppointmentsForPatient(patientId!)
-        : appointmentProvider.fetchAppointmentsForUser();
-
     return FutureBuilder<void>(
-      future: fetchAppointmentsFuture,
+      future: _fetchFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -39,6 +59,7 @@ class AppointmentListWidget extends StatelessWidget {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
 
+        // Now that we've fetched data once, let the Consumer read the final state.
         return Consumer<AppointmentProvider>(
           builder: (context, appointmentProvider, child) {
             if (appointmentProvider.appointments.isEmpty) {
@@ -52,13 +73,17 @@ class AppointmentListWidget extends StatelessWidget {
                   itemCount: appointmentProvider.appointments.length,
                   itemBuilder: (context, index) {
                     final appointment = appointmentProvider.appointments[index];
-                    final createdDate = DateFormat('yyyy-MM-dd – kk:mm').format(appointment.createdAt);
-                    final appointmentDateTime = DateFormat('yyyy-MM-dd – kk:mm').format(appointment.appointmentDateTime);
+                    final createdDate = DateFormat('yyyy-MM-dd – kk:mm')
+                        .format(appointment.createdAt);
+                    final appointmentDateTime = DateFormat('yyyy-MM-dd – kk:mm')
+                        .format(appointment.appointmentDateTime);
                     final updatedDate = appointment.updatedAt != null
-                        ? DateFormat('yyyy-MM-dd – kk:mm').format(appointment.updatedAt!)
+                        ? DateFormat('yyyy-MM-dd – kk:mm')
+                        .format(appointment.updatedAt!)
                         : 'N/A';
 
-                    final isCurrentUserDoctor = currentUserKeycloakId == appointment.doctor.keycloakUserId;
+                    final isCurrentUserDoctor =
+                        currentUserKeycloakId == appointment.doctor.keycloakUserId;
 
                     return Center(
                       child: Container(
@@ -89,7 +114,8 @@ class AppointmentListWidget extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Text('Doctor: ${appointment.doctor.name}'),
                                 appointment.doctor.specialties.isNotEmpty
-                                    ? Text('Specialties: ${appointment.doctor.specialties}')
+                                    ? Text(
+                                    'Specialties: ${appointment.doctor.specialties}')
                                     : const Text('Specialties: N/A'),
                                 Text('Appointment date and time: $appointmentDateTime'),
                                 Text('Created At: $createdDate'),
@@ -105,7 +131,10 @@ class AppointmentListWidget extends StatelessWidget {
                                     children: [
                                       Text(
                                         'Patient Information',
-                                        style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium!
+                                            .copyWith(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.blueGrey,
                                         ),
@@ -122,13 +151,15 @@ class AppointmentListWidget extends StatelessWidget {
                                   RoleBasedWidget(
                                     allowedRoles: ['admin', 'doctor'],
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                       children: [
                                         ElevatedButton(
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.green,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10.0),
+                                              borderRadius:
+                                              BorderRadius.circular(10.0),
                                             ),
                                           ),
                                           onPressed: () {
@@ -136,19 +167,23 @@ class AppointmentListWidget extends StatelessWidget {
                                               context: context,
                                               builder: (_) => SickLeaveForm(
                                                 appointmentId: appointment.id,
-                                                existingSickLeaves: appointment.sickLeaves,
+                                                existingSickLeaves:
+                                                appointment.sickLeaves,
                                               ),
                                             );
                                           },
-                                          child: const Text('Add Sick Leave',
-                                              style: TextStyle(color: Colors.white)),
+                                          child: const Text(
+                                            'Add Sick Leave',
+                                            style: TextStyle(color: Colors.white),
+                                          ),
                                         ),
                                         const SizedBox(width: 10),
                                         ElevatedButton(
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.blue,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10.0),
+                                              borderRadius:
+                                              BorderRadius.circular(10.0),
                                             ),
                                           ),
                                           onPressed: () {
@@ -156,12 +191,15 @@ class AppointmentListWidget extends StatelessWidget {
                                               context: context,
                                               builder: (_) => DiagnosisForm(
                                                 appointmentId: appointment.id,
-                                                existingDiagnoses: appointment.diagnoses,
+                                                existingDiagnoses:
+                                                appointment.diagnoses,
                                               ),
                                             );
                                           },
-                                          child: const Text('Add Diagnosis',
-                                              style: TextStyle(color: Colors.white)),
+                                          child: const Text(
+                                            'Add Diagnosis',
+                                            style: TextStyle(color: Colors.white),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -169,7 +207,8 @@ class AppointmentListWidget extends StatelessWidget {
                                 const SizedBox(height: 16),
 
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
                                   children: [
                                     if (appointment.sickLeaves.isNotEmpty)
                                       Expanded(
@@ -177,20 +216,24 @@ class AppointmentListWidget extends StatelessWidget {
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.blueAccent,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10.0),
+                                              borderRadius:
+                                              BorderRadius.circular(10.0),
                                             ),
                                           ),
                                           onPressed: () {
                                             showDialog(
                                               context: context,
                                               builder: (_) => SickLeaveDialog(
-                                                sickLeaves: appointment.sickLeaves,
-                                                appointmentId: appointment.id, doctorKeycloakUserId: appointment.doctor.keycloakUserId,
+                                                appointmentId: appointment.id,
+                                                doctorKeycloakUserId: appointment
+                                                    .doctor.keycloakUserId,
                                               ),
                                             );
                                           },
-                                          child: const Text('View Sick Leave Details',
-                                              style: TextStyle(color: Colors.white)),
+                                          child: const Text(
+                                            'View Sick Leave Details',
+                                            style: TextStyle(color: Colors.white),
+                                          ),
                                         ),
                                       ),
                                     const SizedBox(width: 10),
@@ -200,30 +243,36 @@ class AppointmentListWidget extends StatelessWidget {
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.blueAccent,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10.0),
+                                              borderRadius:
+                                              BorderRadius.circular(10.0),
                                             ),
                                           ),
                                           onPressed: () {
                                             showDialog(
                                               context: context,
                                               builder: (_) => DiagnosisDialog(
-                                                diagnoses: appointment.diagnoses,
-                                                appointmentId: appointment.id, doctorKeycloakUserId: appointment.doctor.keycloakUserId,
+                                                appointmentId: appointment.id,
+                                                doctorKeycloakUserId: appointment
+                                                    .doctor.keycloakUserId,
                                               ),
                                             );
                                           },
-                                          child: const Text('View Diagnosis Details',
-                                              style: TextStyle(color: Colors.white)),
+                                          child: const Text(
+                                            'View Diagnosis Details',
+                                            style: TextStyle(color: Colors.white),
+                                          ),
                                         ),
                                       ),
                                   ],
                                 ),
                                 const SizedBox(height: 16),
+
                                 if (isCurrentUserDoctor)
                                   RoleBasedWidget(
                                     allowedRoles: ['admin', 'doctor'],
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                       children: [
                                         ElevatedButton(
                                           onPressed: () {
@@ -232,7 +281,12 @@ class AppointmentListWidget extends StatelessWidget {
                                               builder: (_) => EditAppointmentForm(
                                                 appointment: appointment,
                                                 onUpdate: (updatedAppointment) {
-                                                  appointmentProvider.updateLocalAppointment(updatedAppointment);
+                                                  Provider.of<AppointmentProvider>(
+                                                    context,
+                                                    listen: false,
+                                                  ).updateLocalAppointment(
+                                                    updatedAppointment,
+                                                  );
                                                 },
                                               ),
                                             );
@@ -241,14 +295,29 @@ class AppointmentListWidget extends StatelessWidget {
                                         ),
                                         ElevatedButton(
                                           onPressed: () async {
-                                            bool success = await appointmentProvider.deleteAppointment(appointment.id);
+                                            bool success =
+                                            await Provider.of<AppointmentProvider>(
+                                              context,
+                                              listen: false,
+                                            ).deleteAppointment(appointment.id);
+
                                             if (success) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text('Appointment deleted successfully')),
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Appointment deleted successfully',
+                                                  ),
+                                                ),
                                               );
                                             } else {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text('Failed to delete appointment')),
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Failed to delete appointment',
+                                                  ),
+                                                ),
                                               );
                                             }
                                           },

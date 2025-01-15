@@ -50,11 +50,12 @@ class AppointmentService {
 
 
   // Create new sick leave
-  Future<void> createSickLeave(int appointmentId, Map<String, dynamic> sickLeaveData) async {
+  Future<SickLeave> createSickLeave(int appointmentId, Map<String, dynamic> sickLeaveData) async {
     final response = await _apiService.post('/appointments/$appointmentId/sick-leave', body: sickLeaveData);
     if (response.statusCode != 200) {
       throw Exception('Failed to create sick leave');
     }
+    return SickLeave.fromJson(json.decode(response.body));
   }
 
   // Update existing sick leave
@@ -74,12 +75,17 @@ class AppointmentService {
   }
 
   // Create new diagnosis
-  Future<void> createDiagnosis(int appointmentId, Map<String, dynamic> diagnosisData) async {
+  Future<Diagnosis> createDiagnosis(int appointmentId, Map<String, dynamic> diagnosisData) async {
     final response = await _apiService.post('/appointments/$appointmentId/diagnosis', body: diagnosisData);
-    if (response.statusCode != 200) {
+
+    if (response.statusCode == 200) {
+      // convert the JSON to a Diagnosis
+      return Diagnosis.fromJson(json.decode(response.body));
+    } else {
       throw Exception('Failed to create diagnosis');
     }
   }
+
 
   // Update existing diagnosis
   Future<Diagnosis> updateDiagnosis(int appointmentId, int diagnosisId, Map<String, dynamic> diagnosisData) async {

@@ -75,10 +75,22 @@ class AppointmentProvider with ChangeNotifier {
     }
   }
 
-  Future<void> createSickLeave(
-      int appointmentId, Map<String, dynamic> sickLeaveData) async {
-    await _appointmentService.createSickLeave(appointmentId, sickLeaveData);
-    await fetchAppointmentsForUser();
+  Future<bool> createSickLeave(int appointmentId, Map<String, dynamic> sickLeaveData) async {
+    try {
+      final newSickLeave = await _appointmentService.createSickLeave(appointmentId, sickLeaveData);
+
+      final appointmentIndex = _appointments.indexWhere((a) => a.id == appointmentId);
+      if (appointmentIndex == -1) return false;
+
+      _appointments[appointmentIndex].sickLeaves.add(newSickLeave);
+
+      notifyListenersSafely();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListenersSafely();
+      return false;
+    }
   }
 
   Future<SickLeave> updateSickLeave(int appointmentId, int sickLeaveId,
@@ -162,11 +174,33 @@ class AppointmentProvider with ChangeNotifier {
     return success;
   }
 
-  Future<void> createDiagnosis(
-      int appointmentId, Map<String, dynamic> diagnosisData) async {
-    await _appointmentService.createDiagnosis(appointmentId, diagnosisData);
-    await fetchAppointmentsForUser();
+  Future<bool> createDiagnosis(int appointmentId, Map<String, dynamic> diagnosisData) async {
+    try {
+      // 1) Call the service to create the new Diagnosis
+      final newDiagnosis = await _appointmentService.createDiagnosis(appointmentId, diagnosisData);
+
+      // 2) Find the relevant appointment in _appointments
+      final index = _appointments.indexWhere((a) => a.id == appointmentId);
+      if (index == -1) {
+        // Could handle error or do nothing if appointment not found
+        return false;
+      }
+
+      // 3) Push the newly created diagnosis into the local list
+      _appointments[index].diagnoses.add(newDiagnosis);
+
+      // 4) Notify the UI
+      notifyListenersSafely();
+      return true;
+
+    } catch (e) {
+      _error = e.toString();
+      notifyListenersSafely();
+      return false;
+    }
   }
+
+
 
   Future<Diagnosis> updateDiagnosis(int appointmentId, int diagnosisId,
       Map<String, dynamic> diagnosisData) async {

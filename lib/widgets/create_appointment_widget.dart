@@ -141,7 +141,7 @@ class _CreateAppointmentWidgetState extends State<CreateAppointmentWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Appointment created successfully')),
         );
-        Provider.of<AppointmentProvider>(context, listen: false).fetchAppointmentsForUser();
+        // Provider.of<AppointmentProvider>(context, listen: false).fetchAppointmentsForUser();
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
