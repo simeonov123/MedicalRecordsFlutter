@@ -26,14 +26,29 @@ class AppointmentListWidget extends StatefulWidget {
   State<AppointmentListWidget> createState() => _AppointmentListWidgetState();
 }
 
-class _AppointmentListWidgetState extends State<AppointmentListWidget> {
+class _AppointmentListWidgetState extends State<AppointmentListWidget>
+    with SingleTickerProviderStateMixin {
   late Future<void> _fetchFuture;
+
+  // AnimationController and CurvedAnimation for the fade-in
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // Fetch appointments *once* during initState, rather than on every build.
+    // 1) Set up our fade-in AnimationController
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700), // adjust as desired
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+
+    // 2) Trigger the initial fetch
     final appointmentProvider =
     Provider.of<AppointmentProvider>(context, listen: false);
 
@@ -43,6 +58,14 @@ class _AppointmentListWidgetState extends State<AppointmentListWidget> {
     } else {
       _fetchFuture = appointmentProvider.fetchAppointmentsForUser();
     }
+
+    // We don’t call _controller.forward() yet; we’ll do it once the Future completes
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -53,76 +76,86 @@ class _AppointmentListWidgetState extends State<AppointmentListWidget> {
     return FutureBuilder<void>(
       future: _fetchFuture,
       builder: (context, snapshot) {
+        // While waiting, show a spinner
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
+          // Show error
           return Center(child: Text('Error: ${snapshot.error}'));
         }
 
-        // Now that we've fetched data once, let the Consumer read the final state.
-        return Consumer<AppointmentProvider>(
-          builder: (context, appointmentProvider, child) {
-            if (appointmentProvider.appointments.isEmpty) {
-              return const Center(child: Text('No appointments found.'));
-            }
+        // If we’re here, the Future is done:
+        // -> forward the fade-in animation if not already done
+        if (_controller.status == AnimationStatus.dismissed) {
+          _controller.forward();
+        }
 
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                final isLargeScreen = constraints.maxWidth > 600;
-                return ListView.builder(
-                  itemCount: appointmentProvider.appointments.length,
-                  itemBuilder: (context, index) {
-                    final appointment = appointmentProvider.appointments[index];
-                    final createdDate = DateFormat('yyyy-MM-dd – kk:mm')
-                        .format(appointment.createdAt);
-                    final appointmentDateTime = DateFormat('yyyy-MM-dd – kk:mm')
-                        .format(appointment.appointmentDateTime);
-                    final updatedDate = appointment.updatedAt != null
-                        ? DateFormat('yyyy-MM-dd – kk:mm')
-                        .format(appointment.updatedAt!)
-                        : 'N/A';
+        // 3) Return the fade transition for the entire list content
+        return FadeTransition(
+            opacity: _fadeAnimation,
+            child: Consumer<AppointmentProvider>(
+            builder: (context, appointmentProvider, child) {
+          if (appointmentProvider.appointments.isEmpty) {
+            return const Center(child: Text('No appointments found.'));
+          }
 
-                    final isCurrentUserDoctor =
-                        currentUserKeycloakId == appointment.doctor.keycloakUserId;
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final isLargeScreen = constraints.maxWidth > 600;
+              return ListView.builder(
+                itemCount: appointmentProvider.appointments.length,
+                itemBuilder: (context, index) {
+                  final appointment = appointmentProvider.appointments[index];
+                  final createdDate = DateFormat('yyyy-MM-dd – kk:mm')
+                      .format(appointment.createdAt);
+                  final appointmentDateTime = DateFormat('yyyy-MM-dd – kk:mm')
+                      .format(appointment.appointmentDateTime);
+                  final updatedDate = appointment.updatedAt != null
+                      ? DateFormat('yyyy-MM-dd – kk:mm')
+                      .format(appointment.updatedAt!)
+                      : 'N/A';
 
-                    return Center(
-                      child: Container(
-                        width: isLargeScreen ? 850 : double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          vertical: 8.0,
-                          horizontal: isLargeScreen ? 0 : 16.0,
+                  final isCurrentUserDoctor =
+                      currentUserKeycloakId == appointment.doctor.keycloakUserId;
+
+                  return Center(
+                    child: Container(
+                      width: isLargeScreen ? 850 : double.infinity,
+                      padding: EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: isLargeScreen ? 0 : 16.0,
+                      ),
+                      child: Card(
+                        elevation: 6,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
                         ),
-                        child: Card(
-                          elevation: 6,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Appointment ID: ${appointment.id}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge!
-                                      .copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                Divider(color: Colors.grey.shade400),
-                                const SizedBox(height: 8),
-                                Text('Doctor: ${appointment.doctor.name}'),
-                                appointment.doctor.specialties.isNotEmpty
-                                    ? Text(
-                                    'Specialties: ${appointment.doctor.specialties}')
-                                    : const Text('Specialties: N/A'),
-                                Text('Appointment date and time: $appointmentDateTime'),
-                                Text('Created At: $createdDate'),
-                                Text('Updated At: $updatedDate'),
-                                const SizedBox(height: 16),
-                                Divider(color: Colors.grey.shade400),
-                                const SizedBox(height: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Appointment ID: ${appointment.id}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge!
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              Divider(color: Colors.grey.shade400),
+                              const SizedBox(height: 8),
+                              Text('Doctor: ${appointment.doctor.name}'),
+                              appointment.doctor.specialties.isNotEmpty
+                                  ? Text(
+                                  'Specialties: ${appointment.doctor.specialties}')
+                                  : const Text('Specialties: N/A'),
+                              Text('Appointment date and time: $appointmentDateTime'),
+                              Text('Created At: $createdDate'),
+                              Text('Updated At: $updatedDate'),
+                              const SizedBox(height: 16),
+                              Divider(color: Colors.grey.shade400),
+                              const SizedBox(height: 16),
 
                                 RoleBasedWidget(
                                   allowedRoles: ['admin', 'doctor'],
@@ -267,80 +300,82 @@ class _AppointmentListWidgetState extends State<AppointmentListWidget> {
                                 ),
                                 const SizedBox(height: 16),
 
-                                if (isCurrentUserDoctor || authProvider.roles.contains('admin'))
-                                  RoleBasedWidget(
-                                    allowedRoles: ['admin', 'doctor'],
-                                    child: Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            showDialog(
-                                              context: context,
-                                              builder: (_) => EditAppointmentForm(
-                                                appointment: appointment,
-                                                onUpdate: (updatedAppointment) {
-                                                  Provider.of<AppointmentProvider>(
-                                                    context,
-                                                    listen: false,
-                                                  ).updateLocalAppointment(
-                                                    updatedAppointment,
-                                                  );
-                                                },
+                              if (isCurrentUserDoctor ||
+                                  authProvider.roles.contains('admin'))
+                                RoleBasedWidget(
+                                  allowedRoles: ['admin', 'doctor'],
+                                  child: Row(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (_) => EditAppointmentForm(
+                                              appointment: appointment,
+                                              onUpdate: (updatedAppointment) {
+                                                Provider.of<AppointmentProvider>(
+                                                  context,
+                                                  listen: false,
+                                                ).updateLocalAppointment(
+                                                  updatedAppointment,
+                                                );
+                                              },
+                                            ),
+                                          );
+                                        },
+                                        child: const Text('Edit'),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () async {
+                                          bool success =
+                                          await Provider.of<AppointmentProvider>(
+                                            context,
+                                            listen: false,
+                                          ).deleteAppointment(appointment.id);
+
+                                          if (success) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Appointment deleted successfully',
+                                                ),
                                               ),
                                             );
-                                          },
-                                          child: const Text('Edit'),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () async {
-                                            bool success =
-                                            await Provider.of<AppointmentProvider>(
-                                              context,
-                                              listen: false,
-                                            ).deleteAppointment(appointment.id);
-
-                                            if (success) {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                const SnackBar(
-                                                  content: Text(
-                                                    'Appointment deleted successfully',
-                                                  ),
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Failed to delete appointment',
                                                 ),
-                                              );
-                                            } else {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                const SnackBar(
-                                                  content: Text(
-                                                    'Failed to delete appointment',
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            foregroundColor: Colors.white,
-                                          ),
-                                          child: const Text('Delete'),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          foregroundColor: Colors.white,
                                         ),
-                                      ],
-                                    ),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
                                   ),
-                              ],
-                            ),
+                                ),
+                            ],
                           ),
                         ),
                       ),
-                    );
-                  },
-                );
-              },
-            );
-          },
+                    ),
+                  );
+                },
+              );
+            },
+          );
+            },
+            ),
         );
       },
     );

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../domain/doctor.dart';
 import '../../domain/patient.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/doctor_provider.dart';
@@ -180,6 +179,18 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
               },
               tooltip: 'View Patients',
               child: const Icon(Icons.people),
+            ),
+          ),
+          const SizedBox(height: 8),
+          RoleBasedWidget(
+            allowedRoles: ['admin'],
+            child: FloatingActionButton(
+              heroTag: 'viewStatistics',
+              onPressed: () {
+                Navigator.pushNamed(context, '/statistics');
+              },
+              tooltip: 'View Statistics',
+              child: const Icon(Icons.bar_chart),
             ),
           ),
         ],

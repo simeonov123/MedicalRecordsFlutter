@@ -1,10 +1,11 @@
 // lib/routes.dart
 
 import 'package:flutter/material.dart';
+import 'package:medical_records_frontend/screens/admin/statistics_screen.dart';
 import 'package:medical_records_frontend/screens/doctor/doctor_dashboard.dart';
 import 'package:medical_records_frontend/screens/doctor/doctor_list_screen.dart';
 import 'package:medical_records_frontend/screens/patient/patient_list_screen.dart';
-import 'package:medical_records_frontend/widgets/AppointmentListWidget.dart';
+// Removed import for AppointmentListWidget because we won't define its route here
 import 'package:provider/provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';
@@ -12,6 +13,7 @@ import 'screens/admin/user_management_panel.dart';
 import 'screens/patient/patient_dashboard.dart';
 import 'provider/auth_provider.dart';
 
+/// Standard named routes, minus '/patient/appointments' which we handle in onGenerateRoute
 final Map<String, WidgetBuilder> routes = {
   '/': (context) => const LoginScreen(),
   '/signup': (context) => const SignupScreen(),
@@ -35,14 +37,13 @@ final Map<String, WidgetBuilder> routes = {
     allowedRoles: ['admin', 'doctor'],
     child: PatientListScreen(),
   ),
-  '/patient/appointments': (context) {
-    final patientId = ModalRoute.of(context)?.settings.arguments as int?;
-    return RoleGuard(
-      allowedRoles: ['admin', 'doctor'],
-      child: AppointmentListWidget(fromDoctorOrAdmin: true, patientId: patientId),
-    );
-  },
+  '/statistics': (context) => const RoleGuard(
+    allowedRoles: ['admin'],
+    child: StatisticsScreen(),
+  ),
 
+  //  !!! Removed the /patient/appointments route definition !!!
+  //  '/patient/appointments': (context) { ... } <-- no longer needed
 };
 
 class RoleGuard extends StatelessWidget {
