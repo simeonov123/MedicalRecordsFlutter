@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../provider/statistics_provider.dart';
 import '../../widgets/diagnosis_search_widget.dart';
+import '../../widgets/diagnosis_leaderboards_widget.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({Key? key}) : super(key: key);
@@ -89,10 +90,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         // We'll give it some constraints so the list is scrollable
                         child: const DiagnosisSearchWidget(),
                       ),
-
                       // 3) Future boxes can go here
                       // Container(...) for another stat or chart, etc.
-                      // For now, we only have 2 main items
+                      Container(
+                        decoration: _boxDecorationStyle(),
+                        child: const DiagnosisLeaderboardsWidget(),
+                      ),
                     ],
                   );
                 },

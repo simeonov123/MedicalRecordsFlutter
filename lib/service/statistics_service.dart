@@ -22,7 +22,7 @@ class StatisticsService {
     }
   }
   Future<List<Patient>> fetchQueriedPatientsByDiagnosis(String diagnosis) async {
-    final response = await _apiService.get('/patients?diagnosis=$diagnosis');
+    final response = await _apiService.get('/patients/searchByDiagnosis?diagnosis=$diagnosis');
     if (response.statusCode == 200) {
       return (json.decode(response.body) as List)
           .map((data) => Patient.fromJson(data))
@@ -30,5 +30,70 @@ class StatisticsService {
     } else {
       throw Exception('Failed to fetch patients by diagnosis');
     }
+  }
+
+  Future<DiagnosisStatisticsDto> fetchDiagnosisLeaderboard() async {
+    // Calls GET /statistics/diagnoses/leaderboard
+    final response = await _apiService.get('/statistics/diagnoses/leaderboard');
+    if (response.statusCode == 200) {
+      return DiagnosisStatisticsDto.fromJson(
+        json.decode(response.body),
+      );
+    } else {
+      throw Exception(
+        'Failed to fetch diagnosis leaderboard: ${response.statusCode}',
+      );
+    }
+  }
+}
+
+// You also need these model classes to parse the JSON above:
+
+class DiagnosisStatisticsDto {
+  final List<DiagnosisDetailsDto> diagnosisDetails;
+
+  DiagnosisStatisticsDto({required this.diagnosisDetails});
+
+  factory DiagnosisStatisticsDto.fromJson(Map<String, dynamic> json) {
+    final detailsList = (json['diagnosisDetails'] as List)
+        .map((item) => DiagnosisDetailsDto.fromJson(item))
+        .toList();
+    return DiagnosisStatisticsDto(diagnosisDetails: detailsList);
+  }
+}
+
+class DiagnosisDetailsDto {
+  final String statement;
+  final int count;
+  final int percentageOfAllDiagnoses;
+  final int percentageOfAllPatients;
+  final String? doctorNameOfFirstDiagnosis;
+  final DateTime? dateOfFirstDiagnosis;
+  final DateTime? dateOfLastDiagnosis;
+
+  DiagnosisDetailsDto({
+    required this.statement,
+    required this.count,
+    required this.percentageOfAllDiagnoses,
+    required this.percentageOfAllPatients,
+    required this.doctorNameOfFirstDiagnosis,
+    required this.dateOfFirstDiagnosis,
+    required this.dateOfLastDiagnosis,
+  });
+
+  factory DiagnosisDetailsDto.fromJson(Map<String, dynamic> json) {
+    return DiagnosisDetailsDto(
+      statement: json['statement'],
+      count: json['count'],
+      percentageOfAllDiagnoses: json['percentageOfAllDiagnoses'],
+      percentageOfAllPatients: json['percentageOfAllPatients'],
+      doctorNameOfFirstDiagnosis: json['doctorNameOfFirstDiagnosis'],
+      dateOfFirstDiagnosis: json['dateOfFirstDiagnosis'] != null
+          ? DateTime.parse(json['dateOfFirstDiagnosis'])
+          : null,
+      dateOfLastDiagnosis: json['dateOfLastDiagnosis'] != null
+          ? DateTime.parse(json['dateOfLastDiagnosis'])
+          : null,
+    );
   }
 }
