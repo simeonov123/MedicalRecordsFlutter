@@ -147,7 +147,7 @@ class _AppointmentListWidgetState extends State<AppointmentListWidget> {
                                   ),
                                 ),
 
-                                if (isCurrentUserDoctor)
+                                if (isCurrentUserDoctor || authProvider.roles.contains('admin'))
                                   RoleBasedWidget(
                                     allowedRoles: ['admin', 'doctor'],
                                     child: Row(
@@ -267,7 +267,7 @@ class _AppointmentListWidgetState extends State<AppointmentListWidget> {
                                 ),
                                 const SizedBox(height: 16),
 
-                                if (isCurrentUserDoctor)
+                                if (isCurrentUserDoctor || authProvider.roles.contains('admin'))
                                   RoleBasedWidget(
                                     allowedRoles: ['admin', 'doctor'],
                                     child: Row(

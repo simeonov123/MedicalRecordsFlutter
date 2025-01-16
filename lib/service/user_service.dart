@@ -61,4 +61,12 @@ class UserService {
     final resp = await _apiService.put('/users/$userId/details', body: body);
     return resp.statusCode == 200;
   }
+
+  Future<bool> syncKeycloakUsers() async {
+    // Make POST /auth/sync, which returns status code 200 and body "Sync started"
+    final resp = await _apiService.post('/auth/sync');
+
+    // If the request was successful (200), return true, else false
+    return resp.statusCode == 200;
+  }
 }

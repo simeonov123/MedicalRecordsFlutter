@@ -89,4 +89,33 @@ class UserProvider with ChangeNotifier {
     }
     return success;
   }
+
+
+  /// Call POST /auth/sync to trigger the Keycloak->Local DB sync on the backend
+  Future<bool> syncKeycloakUsers() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // 1) Await the future result from the service
+      final bool success = await _userService.syncKeycloakUsers();
+
+      if (success) {
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        // 2) If not successful, set an error message
+        _error = 'Failed to sync Keycloak users.';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 }

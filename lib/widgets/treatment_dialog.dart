@@ -134,8 +134,7 @@ class TreatmentDialog extends StatelessWidget {
                                   mainAxisAlignment:
                                   MainAxisAlignment.end,
                                   children: [
-                                    if (authProvider.roles
-                                        .contains('doctor') &&
+                                    if (authProvider.roles.contains('admin') ||
                                         authProvider.keycloakUserId ==
                                             doctorKeycloakUserId)
                                       ElevatedButton(
@@ -155,8 +154,7 @@ class TreatmentDialog extends StatelessWidget {
                                       ),
                                     const SizedBox(width: 8),
 
-                                    if (authProvider.roles
-                                        .contains('doctor') &&
+                                    if (authProvider.roles.contains('admin') ||
                                         authProvider.keycloakUserId ==
                                             doctorKeycloakUserId)
                                       ElevatedButton(
@@ -182,8 +180,7 @@ class TreatmentDialog extends StatelessWidget {
                                       ),
                                     const SizedBox(width: 8),
 
-                                    if (authProvider.roles
-                                        .contains('doctor') &&
+                                    if (authProvider.roles.contains('admin') ||
                                         authProvider.keycloakUserId ==
                                             doctorKeycloakUserId)
                                       ElevatedButton(
