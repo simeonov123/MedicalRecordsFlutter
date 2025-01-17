@@ -45,6 +45,19 @@ class StatisticsService {
       );
     }
   }
+
+  Future<List<Patient>> fetchPatientsByDoctorId(int doctorId) async {
+    final response = await _apiService.get('/statistics/patients/byDoctor/$doctorId');
+    if (response.statusCode == 200) {
+      return (json.decode(response.body) as List)
+          .map((data) => Patient.fromJson(data))
+          .toList();
+    } else {
+      throw Exception('Failed to fetch patients by doctor ID');
+    }
+  }
+
+
 }
 
 // You also need these model classes to parse the JSON above:
@@ -96,4 +109,7 @@ class DiagnosisDetailsDto {
           : null,
     );
   }
+
+
+
 }

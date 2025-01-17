@@ -10,6 +10,8 @@ class StatisticsProvider with ChangeNotifier {
   int _totalAppointments = 0;
   List<String> _uniqueDiagnoses = [];
   List<Patient> _queriedPatients = [];
+  List<Patient> _patientsByDoctor = [];
+  List<Patient> get patientsByDoctor => _patientsByDoctor;
 // For the leaderboard
   List<DiagnosisDetailsDto> _diagnosisLeaderboard = [];
 
@@ -84,6 +86,23 @@ class StatisticsProvider with ChangeNotifier {
       final dto = await _statisticsService.fetchDiagnosisLeaderboard();
       // Store only top 10 for display
       _diagnosisLeaderboard = dto.diagnosisDetails.take(10).toList();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListenersSafely();
+    }
+  }
+
+
+
+  Future<void> fetchPatientsByDoctorId(int doctorId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListenersSafely();
+
+    try {
+      _patientsByDoctor = await _statisticsService.fetchPatientsByDoctorId(doctorId);
     } catch (e) {
       _error = e.toString();
     } finally {
