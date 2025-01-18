@@ -93,6 +93,27 @@ class StatisticsService {
 
   }
 
+  Future<List<MostSickLeavesMonthData>> fetchMonthDataFromBackend() async {
+    final response = await _apiService.get('/statistics/most-sick-leaves-month-data');
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      final data = [MostSickLeavesMonthData.fromJson(jsonResponse)];
+      return data;
+    } else {
+      throw Exception('Failed to fetch most sick leaves month data');
+    }
+  }
+
+  Future<List<DoctorsSickLeavesLeaderboardDto>> fetchDoctorsSickLeavesLeaderboard() async {
+    final response = await _apiService.get('/statistics/doctors-sick-leaves-leaderboard');
+    if (response.statusCode == 200) {
+      return (json.decode(response.body) as List)
+          .map((data) => DoctorsSickLeavesLeaderboardDto.fromJson(data))
+          .toList();
+    } else {
+      throw Exception('Failed to fetch doctors sick leaves leaderboard');
+    }
+  }
 }
 
 // You also need these model classes to parse the JSON above:
@@ -201,6 +222,62 @@ class DoctorsThatHaveAppointmentsInPeriod {
       doctorId: json['doctorId'],
       startDate: DateTime.parse(json['startDate']),
       endDate: DateTime.parse(json['endDate']),
+    );
+  }
+}
+
+
+class MostSickLeavesMonthData {
+  final String monthName;
+  final int sickLeavesCount;
+  final int appointmentsThatMonthCount;
+  final int uniquePatientsCount;
+  final String mostCommonDiagnosisThatMonth;
+
+  MostSickLeavesMonthData({
+    required this.monthName,
+    required this.sickLeavesCount,
+    required this.appointmentsThatMonthCount,
+    required this.uniquePatientsCount,
+    required this.mostCommonDiagnosisThatMonth,
+  });
+
+  factory MostSickLeavesMonthData.fromJson(Map<String, dynamic> json) {
+    return MostSickLeavesMonthData(
+      monthName: json['monthName'],
+      sickLeavesCount: json['sickLeavesCount'],
+      appointmentsThatMonthCount: json['appointmentsThatMonthCount'],
+      uniquePatientsCount: json['uniquePatientsCount'],
+      mostCommonDiagnosisThatMonth: json['mostCommonDiagnosisThatMonth'],
+    );
+  }
+
+  @override
+  String toString() {
+    return 'MostSickLeavesMonthData(monthName: $monthName, sickLeavesCount: $sickLeavesCount, appointmentsThatMonthCount: $appointmentsThatMonthCount, uniquePatientsCount: $uniquePatientsCount, mostCommonDiagnosisThatMonth: $mostCommonDiagnosisThatMonth)';
+  }
+}
+
+
+class DoctorsSickLeavesLeaderboardDto {
+  final String name;
+  final String specialties;
+  final bool primaryCare;
+  final int sickLeavesCount;
+
+  DoctorsSickLeavesLeaderboardDto({
+    required this.name,
+    required this.specialties,
+    required this.primaryCare,
+    required this.sickLeavesCount,
+  });
+
+  factory DoctorsSickLeavesLeaderboardDto.fromJson(Map<String, dynamic> json) {
+    return DoctorsSickLeavesLeaderboardDto(
+      name: json['name'],
+      specialties: json['specialties'],
+      primaryCare: json['primaryCare'],
+      sickLeavesCount: json['sickLeavesCount'],
     );
   }
 }

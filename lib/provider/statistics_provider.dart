@@ -16,16 +16,21 @@ class StatisticsProvider with ChangeNotifier {
   List<DoctorPatientCount> _doctorsPatientCount = [];
   List<DoctorAppointmentCount> _doctorsAppointmentCount = [];
   List<DoctorsThatHaveAppointmentsInPeriod> _doctorsThatHaveAppointmentsInPeriod = [];
+  List<MostSickLeavesMonthData> _mostSickLeavesMonthData = [];
+  List<DoctorsSickLeavesLeaderboardDto> _doctorsSickLeavesLeaderboard = [];
   bool get isLoading => _isLoading;
   String? get error => _error;
-
   int get totalAppointments => _totalAppointments;
+
   List<String> get uniqueDiagnoses => _uniqueDiagnoses;
   List<Patient> get queriedPatients => _queriedPatients;
   List<DiagnosisDetailsDto> get diagnosisLeaderboard => _diagnosisLeaderboard;
   List<DoctorPatientCount> get doctorsPatientCount => _doctorsPatientCount;
   List<DoctorAppointmentCount> get doctorsAppointmentCount => _doctorsAppointmentCount;
   List<DoctorsThatHaveAppointmentsInPeriod> get doctorsThatHaveAppointmentsInPeriod => _doctorsThatHaveAppointmentsInPeriod;
+  List<MostSickLeavesMonthData> get mostSickLeavesMonthData => _mostSickLeavesMonthData;
+  List<DoctorsSickLeavesLeaderboardDto> get doctorsSickLeavesLeaderboard => _doctorsSickLeavesLeaderboard;
+
 
 
 
@@ -157,6 +162,37 @@ class StatisticsProvider with ChangeNotifier {
 
     try {
       _doctorsThatHaveAppointmentsInPeriod = await _statisticsService.fetchDoctorsThatHaveAppointmentsInAPeriod( startDate!, endDate!);
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListenersSafely();
+    }
+  }
+
+  Future<void> fetchMostSickLeavesMonthData() async {
+    _isLoading = true;
+    _error = null;
+    notifyListenersSafely();
+
+    try {
+      _mostSickLeavesMonthData = await _statisticsService.fetchMonthDataFromBackend();
+      print('Provider data: $_mostSickLeavesMonthData'); // Add this line
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListenersSafely();
+    }
+  }
+
+  Future<void> fetchDoctorsSickLeavesLeaderboard() async {
+    _isLoading = true;
+    _error = null;
+    notifyListenersSafely();
+
+    try {
+      _doctorsSickLeavesLeaderboard = await _statisticsService.fetchDoctorsSickLeavesLeaderboard();
     } catch (e) {
       _error = e.toString();
     } finally {

@@ -6,6 +6,8 @@ import '../../widgets/diagnosis_leaderboards_widget.dart';
 import '../../widgets/doctors_appointments_count.dart';
 import '../../widgets/doctors_appointments_period.dart';
 import '../../widgets/doctors_patients_count.dart';
+import '../../widgets/doctors_sick_leaves_leaderboards_widget.dart';
+import '../../widgets/most_sick_leaves_month_data.dart';
 import '../../widgets/patients_by_doctor.dart';
 
 class StatisticsScreen extends StatefulWidget {
@@ -60,34 +62,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     mainAxisSpacing: 16,
                     padding: const EdgeInsets.all(16),
                     children: [
-                      // 1) A box for "Total Appointments"
-                      Container(
-                        decoration: _boxDecorationStyle(),
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Total Appointments',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              '${stats.totalAppointments}',
-                              style: const TextStyle(fontSize: 24),
-                            ),
-                            const Spacer(),
-                            const Text(
-                              'This shows the total number of appointments in the system.',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      ),
-
                       // 2) A box for the DiagnosisSearchWidget
                       Container(
                         decoration: _boxDecorationStyle(),
@@ -115,6 +89,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       Container(
                         decoration: _boxDecorationStyle(),
                         child: const DoctorsAppointmentsPeriod(),
+                      ),
+                      Container(
+                        decoration: _boxDecorationStyle(),
+                        child: const MostSickLeavesMonthDataWidget(),
+                      ),
+                      Container(
+                        decoration: _boxDecorationStyle(),
+                        child: const DoctorsSickLeavesLeaderboardsWidget(),
                       ),
                     ],
                   );
