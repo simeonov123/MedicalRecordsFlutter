@@ -5,6 +5,7 @@ import 'package:medical_records_frontend/screens/admin/statistics_screen.dart';
 import 'package:medical_records_frontend/screens/doctor/doctor_dashboard.dart';
 import 'package:medical_records_frontend/screens/doctor/doctor_list_screen.dart';
 import 'package:medical_records_frontend/screens/patient/patient_list_screen.dart';
+import 'package:medical_records_frontend/widgets/AppointmentListWidget.dart';
 // Removed import for AppointmentListWidget because we won't define its route here
 import 'package:provider/provider.dart';
 import 'screens/auth/login_screen.dart';
@@ -40,6 +41,10 @@ final Map<String, WidgetBuilder> routes = {
   '/statistics': (context) => const RoleGuard(
     allowedRoles: ['admin'],
     child: StatisticsScreen(),
+  ),
+  '/patient/appointments/doctors': (context) => const RoleGuard(
+    allowedRoles: ['admin', 'doctor'],
+    child: AppointmentListWidget(fromDoctorOrAdmin: true),
   ),
 
   //  !!! Removed the /patient/appointments route definition !!!

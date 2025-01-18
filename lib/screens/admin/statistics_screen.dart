@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../../provider/statistics_provider.dart';
 import '../../widgets/diagnosis_search_widget.dart';
 import '../../widgets/diagnosis_leaderboards_widget.dart';
+import '../../widgets/doctors_appointments_count.dart';
+import '../../widgets/doctors_appointments_period.dart';
+import '../../widgets/doctors_patients_count.dart';
 import '../../widgets/patients_by_doctor.dart';
 
 class StatisticsScreen extends StatefulWidget {
@@ -100,6 +103,18 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       Container(
                         decoration: _boxDecorationStyle(),
                         child: const PatientsByDoctor(),
+                      ),
+                      Container(
+                        decoration: _boxDecorationStyle(),
+                        child: const DoctorsPatientsCountWidget(),
+                      ),
+                      Container(
+                        decoration: _boxDecorationStyle(),
+                        child: const DoctorsAppointmentsCountWidget(),
+                      ),
+                      Container(
+                        decoration: _boxDecorationStyle(),
+                        child: const DoctorsAppointmentsPeriod(),
                       ),
                     ],
                   );

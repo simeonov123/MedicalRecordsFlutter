@@ -184,6 +184,15 @@ class AppointmentService {
     }
   }
 
+  Future<List<Appointment>> fetchAppointmentsForDoctor(int doctorId, DateTime startDate, DateTime endDate) async {
+    final response = await _apiService.get('/appointments/doctor/$doctorId?startDate=${startDate.toIso8601String()}&endDate=${endDate.toIso8601String()}');
+    if (response.statusCode == 200) {
+      List<dynamic> listJson = json.decode(response.body);
+      return listJson.map((j) => Appointment.fromJson(j)).toList();
+    } else {
+      throw Exception('Failed to fetch appointments for doctor');
+    }
+  }
 
 
 

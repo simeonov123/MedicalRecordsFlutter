@@ -12,16 +12,22 @@ class StatisticsProvider with ChangeNotifier {
   List<Patient> _queriedPatients = [];
   List<Patient> _patientsByDoctor = [];
   List<Patient> get patientsByDoctor => _patientsByDoctor;
-// For the leaderboard
   List<DiagnosisDetailsDto> _diagnosisLeaderboard = [];
-
+  List<DoctorPatientCount> _doctorsPatientCount = [];
+  List<DoctorAppointmentCount> _doctorsAppointmentCount = [];
+  List<DoctorsThatHaveAppointmentsInPeriod> _doctorsThatHaveAppointmentsInPeriod = [];
   bool get isLoading => _isLoading;
   String? get error => _error;
+
   int get totalAppointments => _totalAppointments;
   List<String> get uniqueDiagnoses => _uniqueDiagnoses;
   List<Patient> get queriedPatients => _queriedPatients;
-// Expose the diagnosis leaderboard
   List<DiagnosisDetailsDto> get diagnosisLeaderboard => _diagnosisLeaderboard;
+  List<DoctorPatientCount> get doctorsPatientCount => _doctorsPatientCount;
+  List<DoctorAppointmentCount> get doctorsAppointmentCount => _doctorsAppointmentCount;
+  List<DoctorsThatHaveAppointmentsInPeriod> get doctorsThatHaveAppointmentsInPeriod => _doctorsThatHaveAppointmentsInPeriod;
+
+
 
   void notifyListenersSafely() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -103,6 +109,54 @@ class StatisticsProvider with ChangeNotifier {
 
     try {
       _patientsByDoctor = await _statisticsService.fetchPatientsByDoctorId(doctorId);
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListenersSafely();
+    }
+  }
+
+
+
+  Future<void> fetchDoctorsWithPatientCount() async {
+    _isLoading = true;
+    _error = null;
+    notifyListenersSafely();
+
+    try {
+      _doctorsPatientCount = await _statisticsService.fetchDoctorsWithPatientCount();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListenersSafely();
+    }
+  }
+
+
+  Future<void> fetchDoctorsWithAppointmentsCount() async {
+    _isLoading = true;
+    _error = null;
+    notifyListenersSafely();
+
+    try {
+      _doctorsAppointmentCount = await _statisticsService.fetchDoctorsWithAppointmentsCount();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListenersSafely();
+    }
+  }
+
+  Future<void> fetchDoctorsThatHaveAppointmentsInAPeriod(DateTime? startDate, DateTime? endDate ) async {
+    _isLoading = true;
+    _error = null;
+    notifyListenersSafely();
+
+    try {
+      _doctorsThatHaveAppointmentsInPeriod = await _statisticsService.fetchDoctorsThatHaveAppointmentsInAPeriod( startDate!, endDate!);
     } catch (e) {
       _error = e.toString();
     } finally {

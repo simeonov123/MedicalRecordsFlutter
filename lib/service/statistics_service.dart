@@ -57,6 +57,41 @@ class StatisticsService {
     }
   }
 
+  Future<List<DoctorPatientCount>> fetchDoctorsWithPatientCount() async {
+    final response = await _apiService.get('/statistics/doctors-with-patient-count');
+    if (response.statusCode == 200) {
+      return (json.decode(response.body) as List)
+          .map((data) => DoctorPatientCount.fromJson(data))
+          .toList();
+    } else {
+      throw Exception('Failed to fetch doctors with patient count');
+    }
+  }
+
+  Future<List<DoctorAppointmentCount>> fetchDoctorsWithAppointmentsCount() async {
+    final response = await _apiService.get('/statistics/doctors-with-appointments-count');
+    if (response.statusCode == 200) {
+      return (json.decode(response.body) as List)
+          .map((data) => DoctorAppointmentCount.fromJson(data))
+          .toList();
+    } else {
+      throw Exception('Failed to fetch doctors with appointments count');
+    }
+  }
+
+
+
+  fetchDoctorsThatHaveAppointmentsInAPeriod(DateTime startDate, DateTime endDate) async {
+    final response = await _apiService.get('/statistics/doctors-with-appointments-in-period?startDate=${startDate.toIso8601String()}&endDate=${endDate.toIso8601String()}');
+    if (response.statusCode == 200) {
+      return (json.decode(response.body) as List)
+          .map((data) => DoctorsThatHaveAppointmentsInPeriod.fromJson(data))
+          .toList();
+    } else {
+      throw Exception('Failed to fetch doctors with appointments count');
+    }
+
+  }
 
 }
 
@@ -112,4 +147,61 @@ class DiagnosisDetailsDto {
 
 
 
+
+
 }
+
+
+// DTO for the data from this method in the StatisticsService: fetchDoctorsWithPatientCount()
+class DoctorPatientCount {
+  final String doctorName;
+  final int count;
+
+  DoctorPatientCount({required this.doctorName, required this.count});
+
+  factory DoctorPatientCount.fromJson(Map<String, dynamic> json) {
+    return DoctorPatientCount(
+      doctorName: json['doctorName'],
+      count: json['count'],
+    );
+  }
+}
+
+class DoctorAppointmentCount {
+  final String doctorName;
+  final int count;
+
+  DoctorAppointmentCount({required this.doctorName, required this.count});
+
+  factory DoctorAppointmentCount.fromJson(Map<String, dynamic> json) {
+    return DoctorAppointmentCount(
+      doctorName: json['doctorName'],
+      count: json['count'],
+    );
+  }
+}
+
+
+class DoctorsThatHaveAppointmentsInPeriod {
+  final String doctorName;
+  final int doctorId;
+  final DateTime startDate;
+  final DateTime endDate;
+
+  DoctorsThatHaveAppointmentsInPeriod({
+    required this.doctorName,
+    required this.doctorId,
+    required this.startDate,
+    required this.endDate,
+  });
+
+  factory DoctorsThatHaveAppointmentsInPeriod.fromJson(Map<String, dynamic> json) {
+    return DoctorsThatHaveAppointmentsInPeriod(
+      doctorName: json['doctorName'],
+      doctorId: json['doctorId'],
+      startDate: DateTime.parse(json['startDate']),
+      endDate: DateTime.parse(json['endDate']),
+    );
+  }
+}
+

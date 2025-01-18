@@ -463,4 +463,18 @@ class AppointmentProvider with ChangeNotifier {
       );
     }
   }
-}
+
+  Future<void> fetchAppointmentsForDoctor(int doctorId, DateTime startDate, DateTime endDate) async {
+    _isLoading = true;
+    notifyListenersSafely();
+
+    try {
+      _appointments = await _appointmentService.fetchAppointmentsForDoctor(doctorId, startDate, endDate);
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListenersSafely();
+    }
+  }}
