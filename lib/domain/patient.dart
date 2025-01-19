@@ -1,12 +1,10 @@
-// lib/domain/patient.dart
-
 class Patient {
   final int id;
   final String name;
   final String egn;
   final bool healthInsurancePaid;
   final int primaryDoctorId;
-  final String keycloakUserId; // New field
+  final String keycloakUserId;
 
   Patient({
     required this.id,
@@ -14,7 +12,7 @@ class Patient {
     required this.egn,
     required this.healthInsurancePaid,
     required this.primaryDoctorId,
-    required this.keycloakUserId, // New field
+    required this.keycloakUserId,
   });
 
   factory Patient.fromJson(Map<String, dynamic> json) {
@@ -29,6 +27,24 @@ class Patient {
       healthInsurancePaid: json['healthInsurancePaid'],
       primaryDoctorId: primaryDoctorId,
       keycloakUserId: json['keycloakUserId'],
+    );
+  }
+
+  Patient copyWith({
+    int? id,
+    String? name,
+    String? egn,
+    bool? healthInsurancePaid,
+    int? primaryDoctorId,
+    String? keycloakUserId,
+  }) {
+    return Patient(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      egn: egn ?? this.egn,
+      healthInsurancePaid: healthInsurancePaid ?? this.healthInsurancePaid,
+      primaryDoctorId: primaryDoctorId ?? this.primaryDoctorId,
+      keycloakUserId: keycloakUserId ?? this.keycloakUserId,
     );
   }
 }

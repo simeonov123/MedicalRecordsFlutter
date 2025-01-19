@@ -1,5 +1,3 @@
-// lib/domain/doctor.dart
-
 class Doctor {
   final int id;
   final String keycloakUserId;
@@ -22,6 +20,22 @@ class Doctor {
       name: json['name'],
       specialties: json['specialties'],
       primaryCare: json['primaryCare'],
+    );
+  }
+
+  Doctor copyWith({
+    int? id,
+    String? keycloakUserId,
+    String? name,
+    String? specialties,
+    bool? primaryCare,
+  }) {
+    return Doctor(
+      id: id ?? this.id,
+      keycloakUserId: keycloakUserId ?? this.keycloakUserId,
+      name: name ?? this.name,
+      specialties: specialties ?? this.specialties,
+      primaryCare: primaryCare ?? this.primaryCare,
     );
   }
 }

@@ -74,9 +74,11 @@ class UserProvider with ChangeNotifier {
         required String lastName,
         required String username,
         required bool emailVerified,
+        required String egn,
+
       }) async {
     bool success = await _userService.updateUserDetails(
-      userId, email, firstName, lastName, username, emailVerified,
+      userId, email, firstName, lastName, emailVerified, egn,
     );
     if (success) {
       int index = _users.indexWhere((user) => user.id == userId);
@@ -117,5 +119,40 @@ class UserProvider with ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+
+  // New method: update local user
+  Future<bool> updateLocalUser({
+    required String userId,
+    required String egn,
+    required String email,
+    required String firstName,
+    required String lastName,
+    required bool emailVerified,
+  }) async {
+    final success = await _userService.updateUserDetails(
+      userId,
+      email,
+      firstName,
+      lastName,
+      emailVerified,
+      egn,
+
+    );
+    if (success) {
+      final index = _users.indexWhere((u) => u.id == userId);
+      if (index != -1) {
+        _users[index] = _users[index].copyWith(
+          email: email,
+          firstName: firstName,
+          lastName: lastName,
+          emailVerified: emailVerified,
+          egn: egn,
+        );
+        notifyListeners();
+      }
+    }
+    return success;
   }
 }

@@ -83,4 +83,39 @@ class PatientProvider with ChangeNotifier {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });
-  }}
+  }
+
+
+  Future<bool> updatePatient(Patient patient) async {
+    // The typical endpoint: PUT /patients/{id}
+    try {
+      final updated = await _apiService.put(
+        '/patients/${patient.keycloakUserId}',
+        body: {
+          "name": patient.name,
+          "healthInsurancePaid": patient.healthInsurancePaid,
+          "primaryDoctorId": patient.primaryDoctorId, // or null
+        },
+      );
+      if (updated.statusCode == 200) {
+        final jsonData = json.decode(updated.body);
+        final updatedP = Patient.fromJson(jsonData);
+        final index = _patients.indexWhere((p) => p.id == updatedP.id);
+        if (index != -1) {
+          _patients[index] = updatedP;
+          notifyListeners();
+        }
+        return true;
+      } else {
+        _error = 'Update failed with code ${updated.statusCode}';
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+}

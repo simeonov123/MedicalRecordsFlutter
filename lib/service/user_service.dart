@@ -48,14 +48,14 @@ class UserService {
       String email,
       String firstName,
       String lastName,
-      String username,
       bool emailVerified,
+      String egn,
       ) async {
     final body = {
       'email': email,
       'firstName': firstName,
       'lastName': lastName,
-      'username': username,
+      'egn' : egn,
       'emailVerified': emailVerified,
     };
     final resp = await _apiService.put('/users/$userId/details', body: body);

@@ -8,6 +8,7 @@ import '../../provider/auth_provider.dart';
 import '../../provider/doctor_provider.dart';
 import '../../provider/patient_provider.dart';
 import '../../provider/user_provider.dart';
+import '../../widgets/edit_user_dialog.dart';
 import '../../widgets/role_based_widget.dart';
 
 class UserManagementPanel extends StatefulWidget {
@@ -407,6 +408,21 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Failed to delete user')),
+                          );
+                        }
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      tooltip: 'Edit User',
+                      onPressed: () async {
+                        final result = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => EditUserDialog(user: user,),
+                        );
+                        if (result == true) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('User updated successfully')),
                           );
                         }
                       },
