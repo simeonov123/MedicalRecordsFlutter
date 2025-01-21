@@ -133,7 +133,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
 
       final updatedPat = Patient(
         id: 0,
-        name: '',
+        name: '${widget.user.firstName} ${widget.user.lastName}',
         egn: '',
         healthInsurancePaid: _healthInsurancePaid,
         primaryDoctorId: primaryDoctorId,

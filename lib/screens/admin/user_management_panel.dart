@@ -200,9 +200,6 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
     );
   }
 
-  // ------------------------------------------
-  // SINGLE COLUMN: Original code, unmodified
-  // ------------------------------------------
   Widget _buildSingleColumnView(
       List<Patient> patients,
       List<dynamic> doctorCandidates,
@@ -709,6 +706,21 @@ class _UserManagementPanelState extends State<UserManagementPanel> {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          tooltip: 'Edit User',
+                          onPressed: () async {
+                            final result = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => EditUserDialog(user: user,),
+                            );
+                            if (result == true) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('User updated successfully')),
+                              );
+                            }
+                          },
+                        ),
                         IconButton(
                           icon: const Icon(Icons.delete),
                           tooltip: 'Delete User',
